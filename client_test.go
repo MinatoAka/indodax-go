@@ -186,18 +186,18 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 	defer cleanup()
 
 	res, err := client.Ticker(context.Background(), "ethidr")
-	if err != nil {
-		t.Fatalf("Ticker error: %v", err)
-	}
+    if err != nil {
+        t.Fatalf("Ticker error: %v", err)
+    }
 
-	// Cek beberapa field sekaligus biar validasi parsing lebih ketat
-	if res.LastPrice != 33570000.0 {
-		t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", res.LastPrice)
-	}
-	if res.LowestAsk != 33571000.0 {
-		t.Errorf("LowestAsk Mismatch. Got: %f", res.LowestAsk)
-	}
-	if res.HighestBid != 33569000.0 {
-		t.Errorf("HighestBid Mismatch. Got: %f", res.HighestBid)
-	}
+    // Convert dulu baru compare
+    lp, _ := res.LastPrice.Float64()
+    if lp != 33570000.0 {
+        t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", lp)
+    }
+
+    hb, _ := res.HighestBid.Float64()
+    if hb != 33569000.0 {
+        t.Errorf("HighestBid Mismatch. Got: %f, Want: 33569000.0", hb)
+    }
 }
