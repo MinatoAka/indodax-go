@@ -9,7 +9,6 @@ import (
 	"net/url"      // ← Diperlukan untuk parsing query/body di validator
 	"strings"
 	"testing"
-	"time"         // ← Dipakai untuk timeout context jika perlu, atau hapus jika unused
 
 	"github.com/MinatoAka/hmacgo"
 )
