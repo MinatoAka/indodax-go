@@ -12,6 +12,8 @@ import (
 	"github.com/MinatoAka/hmacgo"
 )
 
+var BaseURLPrivate = "https://api.indodax.com"
+
 // Balances mengambil saldo IDR dan Aset dasar untuk pair tertentu.
 // Sesuai Doc Resmi: GET endpoint -> Parameters via Query String (pakai "?").
 func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, error) {
