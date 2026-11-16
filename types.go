@@ -24,13 +24,13 @@ type PairInfo struct {
 }
 
 // SubmitOrderRequest adalah payload untuk membuat order baru.
-// Type: "BUY" atau "SELL".
-// Quantity: string presisi (dari FormatQty consumer).
-// QuoteOrderQty: string IDR amount (untuk BUY market order).
+// Sesuai Doc Resmi: Key wajib adalah 'side', bukan 'type'.
 type SubmitOrderRequest struct {
 	Symbol        string `json:"symbol"`
-	Type          string `json:"side"` // "BUY" or "SELL"
+	Side          string `json:"side"`          // ← GANTI NAMA FIELD & TAG
+	Type          string `json:"type"`          // ← TAMBAH FIELD TYPE (LIMIT/MARKET)
+	Price         string `json:"price,omitempty"`     // ← TAMBAH UNTUK LIMIT ORDER
 	Quantity      string `json:"quantity,omitempty"`
 	QuoteOrderQty string `json:"quoteOrderQty,omitempty"`
-	TimeInForce   string `json:"timeInForce,omitempty"` // e.g., "GTC", "IOC"
+	TimeInForce   string `json:"timeInForce,omitempty"`
 }
