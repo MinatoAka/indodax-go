@@ -13,7 +13,7 @@ import (
 )
 
 // Balances mengambil saldo IDR dan Aset dasar untuk pair tertentu.
-// AssetRaw dikembalikan sebagai string mentah dari API untuk menjaga presisi 8-digit.
+// Sesuai Doc Resmi: GET endpoint -> Parameters via Query String (pakai "?").
 func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, error) {
 	if c.apiKey == "" || c.secretKey == "" {
 		return BalanceResult{}, fmt.Errorf("missing credentials for private endpoint")
@@ -24,10 +24,11 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 		"recvWindow": "5000",
 	}
 
-	query := hmacgo.BuildQuery(params)
+	query := hmacgo.BuildQuery(params) // Menghasilkan "recvWindow=5000&timestamp=..."
 	signature := hmacgo.SignSHA256(query, c.secretKey)
 
-	endpoint := BaseURLPrivate + "/api/v2/account" + query
+	// FIX: Tambahin "?" sebagai pemisah Path vs Query String sesuai RFC & Doc Indodax
+	endpoint := BaseURLPrivate + "/api/v2/account?" + query
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -79,6 +80,7 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 }
 
 // OrderStatus mengambil detail order berdasarkan OrderID.
+// Sesuai Doc Resmi: GET endpoint -> Parameters via Query String (pakai "?").
 func (c *Client) OrderStatus(ctx context.Context, orderID int64) (OrderResult, error) {
 	if c.apiKey == "" || c.secretKey == "" {
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
@@ -93,7 +95,8 @@ func (c *Client) OrderStatus(ctx context.Context, orderID int64) (OrderResult, e
 	query := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(query, c.secretKey)
 
-	endpoint := BaseURLPrivate + "/api/v2/order" + query
+	// FIX: Tambahin "?" sesuai protokol GET
+	endpoint := BaseURLPrivate + "/api/v2/order?" + query
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -136,8 +139,7 @@ func (c *Client) OrderStatus(ctx context.Context, orderID int64) (OrderResult, e
 }
 
 // SubmitOrder mengirim order baru (BUY/SELL).
-// Menggunakan metode POST dengan body application/x-www-form-urlencoded.
-// Payload signing adalah BODY string, BUKAN query string.
+// Sesuai Doc Resmi: POST endpoint -> Parameters via Request Body (NO "?" di URL).
 func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest) (OrderResult, error) {
 	if c.apiKey == "" || c.secretKey == "" {
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
@@ -161,16 +163,14 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		params["timeInForce"] = reqPayload.TimeInForce
 	}
 
-	// 2. Bangun Query String untuk SIGNING PAYLOAD
-	// hmacgo.BuildQuery sorts keys alphabetically and encodes them.
-	// Ini menghasilkan string seperti: "quantity=0.1&recvWindow=5000&symbol=ethidr..."
+	// 2. Bangun Payload untuk SIGNING (sama persis dengan body yang dikirim)
 	signingPayload := hmacgo.BuildQuery(params)
 
 	// 3. Generate Signature dari PAYLOAD tersebut
 	signature := hmacgo.SignSHA256(signingPayload, c.secretKey)
 
 	// 4. Siapkan HTTP Request POST
-	// Endpoint TANPA query string (?)
+	// Endpoint TANPA query string (?) karena metode POST membawa data di body
 	endpoint := BaseURLPrivate + "/api/v2/order"
 
 	// Body request harus sama persis dengan signingPayload
