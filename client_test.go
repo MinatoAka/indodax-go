@@ -190,7 +190,7 @@ func TestTicker_PublicNoAuth(t *testing.T) {
         t.Fatalf("Ticker error: %v", err)
     }
 
-    // Convert dulu baru compare
+    // Convert json.Number ke float64 dulu sebelum compare
     lp, _ := res.LastPrice.Float64()
     if lp != 33570000.0 {
         t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", lp)
