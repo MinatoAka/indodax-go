@@ -10,37 +10,28 @@ import (
 	"strings"
 )
 
-// Ticker mengambil harga terakhir pasangan trading.
-// Pair harus lowercase sesuai format Indodax (misal "ethidr").
-func (c *Client) Ticker(ctx context.Context, pair string) (float64, error) {
+// Ticker mengambil data harga pasar lengkap untuk pair tertentu.
+// Mengembalikan struct TickerResponse berisi LastPrice, Bid/Ask, Volume, dll.
+func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error) {
 	endpoint := BaseURLPublic + "/api/ticker/" + url.PathEscape(strings.ToLower(pair))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return 0, fmt.Errorf("build ticker request: %w", err)
+		return TickerResponse{}, fmt.Errorf("build ticker request: %w", err)
 	}
 
 	body, err := c.doRequest(ctx, req)
 	if err != nil {
-		return 0, fmt.Errorf("ticker fetch failed: %w", err)
+		return TickerResponse{}, fmt.Errorf("ticker fetch failed: %w", err)
 	}
 
-	var response struct {
-		Ticker struct {
-			Last string `json:"last"`
-		} `json:"ticker"`
+	// Parse ke struct langsung
+	var result TickerResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return TickerResponse{}, fmt.Errorf("parse ticker JSON: %w", err)
 	}
 
-	if err := json.Unmarshal(body, &response); err != nil {
-		return 0, fmt.Errorf("parse ticker JSON: %w", err)
-	}
-
-	lastPrice, err := strconv.ParseFloat(response.Ticker.Last, 64)
-	if err != nil {
-		return 0, fmt.Errorf("convert ticker price: %w", err)
-	}
-
-	return lastPrice, nil
+	return result, nil
 }
 
 // Pairs mengambil daftar semua pair beserta aturan minimum quantity.
