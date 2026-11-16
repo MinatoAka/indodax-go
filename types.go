@@ -29,11 +29,11 @@ type PairInfo struct {
 // Field-field ini diambil langsung dari endpoint public /api/ticker/{pair}.
 type TickerResponse struct {
 	Pair       string      `json:"pair"`
-	LastPrice  json.Number `json:"last_price"`   // ← GANTI TIPE
-	LowestAsk  json.Number `json:"lowest_ask"`   // ← GANTI TIPE
-	HighestBid json.Number `json:"highest_bid"`  // ← GANTI TIPE
-	Volume     json.Number `json:"volume"`       // ← GANTI TIPE
-	Value      json.Number `json:"value"`        // ← GANTI TIPE
+	LastPrice  json.Number `json:"last_price"`   // ← JSON.NUMBER
+	LowestAsk  json.Number `json:"lowest_ask"`   // ← JSON.NUMBER
+	HighestBid json.Number `json:"highest_bid"`  // ← JSON.NUMBER
+	Volume     json.Number `json:"volume"`       // ← JSON.NUMBER
+	Value      json.Number `json:"value"`        // ← JSON.NUMBER
 }
 
 // SubmitOrderRequest adalah payload untuk membuat order baru.
