@@ -77,7 +77,8 @@ if err != nil {
 ### 3. Cek Saldo (Private - Signed GET)
 
 > **⚠️ CATATAN KRUSIAL:**
-> Gunakan field `AssetRaw` (string) untuk mengirim order SELL. Jangan pernah konversi ke float sebelum kirim, karena bisa kehilangan presisi digit terakhir yang menyebabkan rejection `-1111 Quantity validation failed`.
+> Gunakan field `AssetRaw` (string) untuk mengirim order SELL.
+> Jangan pernah konversi ke float sebelum kirim, karena bisa kehilangan presisi digit terakhir yang menyebabkan rejection `-1111 Quantity validation failed`.
 
 ```go
 balances, err := client.Balances(ctx, "ethidr")
