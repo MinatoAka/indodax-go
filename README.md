@@ -68,19 +68,23 @@ func main() {
 }
 ```
 
-### 2. Ambil Data Harga Live (Public - No Auth)
+### 2. Ambil Data Live Market Lengkap (Public - No Auth)
 
-Endpoint ini tidak butuh signature.
+Menggunakan struct `TickerResponse` dengan tipe `json.Number` untuk menjaga presisi angka dari JSON. Gunakan helper method `.Float64()` untuk akses nilai desimal.
 
 ```go
 ticker, err := client.Ticker(ctx, "ethidr")
 if err != nil {
     log.Printf("Error ticker: %v", err)
 } else {
-    fmt.Printf("Harga Terakhir : Rp %.2f\n", ticker.LastPrice)
-    fmt.Printf("Best Bid       : Rp %.2f\n", ticker.HighestBid)
-    fmt.Printf("Best Ask       : Rp %.2f\n", ticker.LowestAsk)
-    fmt.Printf("Volume 24H     : %.8f ETH\n", ticker.Volume)
+    // Konversi json.Number ke float64 via helper
+    lastPrice, _ := ticker.LastPrice.Float64()
+    bestBid, _   := ticker.HighestBid.Float64()
+    bestAsk, _   := ticker.LowestAsk.Float64()
+    
+    fmt.Printf("Harga Terakhir : Rp %.2f\n", lastPrice)
+    fmt.Printf("Best Bid       : Rp %.2f\n", bestBid)
+    fmt.Printf("Best Ask       : Rp %.2f\n", bestAsk)
 }
 ```
 
