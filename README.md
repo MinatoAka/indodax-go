@@ -3,6 +3,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.27.3-00ADD8?logo=go)](https://go.dev/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/MinatoAka/indodax-go.svg)](https://pkg.go.dev/github.com/MinatoAka/indodax-go)
 [![Go Tests](https://github.com/MinatoAka/indodax-go/actions/workflows/go.yml/badge.svg)](https://github.com/MinatoAka/indodax-go/actions/workflows/go.yml)
+![Release](https://img.shields.io/github/v/release/MinatoAka/indodax-go?include_prereleases&label=release)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
 
