@@ -164,7 +164,7 @@ go test -v ./...
 
 Silakan mendaftar melalui tautan resmi berikut:
 
-👉 *z*[Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen)***
+👉 **[Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen)**
 
 Jika library ini membantu project bot trading anda, bisa juga **[Traktir ☕](https://saweria.co/AKaAturDompet)**.
 
