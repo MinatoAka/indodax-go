@@ -171,9 +171,12 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 		}
 
 		resp := map[string]interface{}{
-			"ticker": map[string]string{
-				"last": "33570000",
-			},
+			"pair":       "ETHIDR",
+			"last_price": "33570000", // String sesuai format JSON Indodax biasanya
+			"lowest_ask": "33571000",
+			"highest_bid":"33569000",
+			"volume":     "120.5",
+			"value":      "4045282500",
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
@@ -182,12 +185,19 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 	client, cleanup := setupTestServer(t, handler)
 	defer cleanup()
 
-	price, err := client.Ticker(context.Background(), "ethidr")
+	res, err := client.Ticker(context.Background(), "ethidr")
 	if err != nil {
 		t.Fatalf("Ticker error: %v", err)
 	}
 
-	if price != 33570000.0 {
-		t.Errorf("Price Mismatch. Got: %f", price)
+	// Cek beberapa field sekaligus biar validasi parsing lebih ketat
+	if res.LastPrice != 33570000.0 {
+		t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", res.LastPrice)
+	}
+	if res.LowestAsk != 33571000.0 {
+		t.Errorf("LowestAsk Mismatch. Got: %f", res.LowestAsk)
+	}
+	if res.HighestBid != 33569000.0 {
+		t.Errorf("HighestBid Mismatch. Got: %f", res.HighestBid)
 	}
 }
