@@ -1,6 +1,6 @@
 # indodax-go
 
-**Standalone Library Go untuk Indodax Trade API v2.**
+***Standalone Library Go untuk Indodax Trade API v2.***
 Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, dan pemisahan jelas antara endpoint Public & Private.
 
 > ⚠️ **Catatan Penting:**  
