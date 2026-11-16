@@ -47,3 +47,16 @@ type SubmitOrderRequest struct {
 	QuoteOrderQty string `json:"quoteOrderQty,omitempty"`
 	TimeInForce   string `json:"timeInForce,omitempty"`
 }
+
+
+// GetLastPrice mengkonversi LastPrice dari json.Number ke float64.
+func (t TickerResponse) GetLastPrice() (float64, error) {
+	return t.LastPrice.Float64()
+}
+
+// GetLowestAsk mengkonversi LowestAsk dari json.Number ke float64.
+func (t TickerResponse) GetLowestAsk() (float64, error) {
+	return t.LowestAsk.Float64()
+}
+
+// ... similarly for HighestBid, Volume, Value ...
