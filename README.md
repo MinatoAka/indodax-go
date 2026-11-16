@@ -1,6 +1,7 @@
 # indodax-go
 
 ***Standalone Library Go untuk Indodax Trade API v2.***
+
 Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, dan pemisahan jelas antara endpoint Public & Private.
 
 > ⚠️ **Catatan Penting:**  
@@ -149,8 +150,8 @@ go test -v ./...
 
 Silakan mendaftar melalui tautan resmi berikut:
 
-👉 **[Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen)**
+👉 *z*[Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen)***
 
 Jika library ini membantu project bot trading anda, bisa juga **[Traktir ☕](https://saweria.co/AKaAturDompet)**.
 
-*(Tautan di atas adalah link afiliasi standar untuk pendaftaran akun baru di platform Indodax.)*
+*(Tautan di atas adalah link referral standar untuk pendaftaran akun baru di platform Indodax.)*
