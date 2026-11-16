@@ -27,7 +27,7 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 	query := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(query, c.secretKey)
 
-	endpoint := BaseURLPrivate + "/api/v2/account?" + query
+	endpoint := BaseURLPrivate + "/api/v2/account" + query
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -93,7 +93,7 @@ func (c *Client) OrderStatus(ctx context.Context, orderID int64) (OrderResult, e
 	query := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(query, c.secretKey)
 
-	endpoint := BaseURLPrivate + "/api/v2/order?" + query
+	endpoint := BaseURLPrivate + "/api/v2/order" + query
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -136,21 +136,21 @@ func (c *Client) OrderStatus(ctx context.Context, orderID int64) (OrderResult, e
 }
 
 // SubmitOrder mengirim order baru (BUY/SELL).
-// Quantity harus string presisi (disarankan pakai utils.FormatQty dari consumer).
+// Menggunakan metode POST dengan body application/x-www-form-urlencoded.
+// Payload signing adalah BODY string, BUKAN query string.
 func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest) (OrderResult, error) {
 	if c.apiKey == "" || c.secretKey == "" {
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
 	}
 
-	// Siapkan params untuk signing
+	// 1. Bangun Params Map
 	params := map[string]string{
 		"symbol":     reqPayload.Symbol,
-		"side":       reqPayload.Type,
+		"type":       strings.ToLower(reqPayload.Type), // "buy" or "sell"
 		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
 		"recvWindow": "5000",
 	}
 
-	// Masukkan optional fields ke params jika ada isinya
 	if reqPayload.Quantity != "" {
 		params["quantity"] = reqPayload.Quantity
 	}
@@ -161,25 +161,39 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		params["timeInForce"] = reqPayload.TimeInForce
 	}
 
-	query := hmacgo.BuildQuery(params)
-	signature := hmacgo.SignSHA256(query, c.secretKey)
+	// 2. Bangun Query String untuk SIGNING PAYLOAD
+	// hmacgo.BuildQuery sorts keys alphabetically and encodes them.
+	// Ini menghasilkan string seperti: "quantity=0.1&recvWindow=5000&symbol=ethidr..."
+	signingPayload := hmacgo.BuildQuery(params)
 
-	endpoint := BaseURLPrivate + "/api/v2/order?" + query
+	// 3. Generate Signature dari PAYLOAD tersebut
+	signature := hmacgo.SignSHA256(signingPayload, c.secretKey)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, nil)
+	// 4. Siapkan HTTP Request POST
+	// Endpoint TANPA query string (?)
+	endpoint := BaseURLPrivate + "/api/v2/order"
+
+	// Body request harus sama persis dengan signingPayload
+	bodyReader := strings.NewReader(signingPayload)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bodyReader)
 	if err != nil {
 		return OrderResult{}, fmt.Errorf("build submit order request: %w", err)
 	}
 
+	// 5. Set Headers Wajib
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-APIKEY", c.apiKey)
 	req.Header.Set("Sign", signature)
 
+	// 6. Execute
 	body, err := c.doRequest(ctx, req)
 	if err != nil {
 		return OrderResult{}, fmt.Errorf("submit order failed: %w", err)
 	}
 
+	// 7. Parse Response
 	var response struct {
 		OrderID             int64  `json:"orderId"`
 		ExecutedQty         string `json:"executedQty"`
