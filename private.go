@@ -79,23 +79,29 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 	return res, nil
 }
 
-// OrderStatus mengambil detail order berdasarkan OrderID.
-// Sesuai Doc Resmi: GET endpoint -> Parameters via Query String (pakai "?").
-func (c *Client) OrderStatus(ctx context.Context, orderID int64) (OrderResult, error) {
+// OrderStatus mengambil detail order berdasarkan OrderID DAN Symbol Pair.
+// Sesuai Doc Resmi: GET /api/v2/order membutuhkan parameter 'symbol' (mandatory).
+func (c *Client) OrderStatus(ctx context.Context, pair string, orderID int64) (OrderResult, error) {
 	if c.apiKey == "" || c.secretKey == "" {
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
 	}
 
 	params := map[string]string{
-		"id":         strconv.FormatInt(orderID, 10),
+		"symbol":     strings.ToUpper(pair),           // ← WAJIB ADA
+		"id":         strconv.FormatInt(orderID, 10),  // ← Doc sebut 'orderId', tapi query param biasanya 'id' atau 'orderId'. Cek doc lagi.
 		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
 		"recvWindow": "5000",
 	}
 
+	// NOTE: Di doc table tertulis "orderId", tapi di contoh legacy sering pakai "id". 
+	// Untuk safety, coba pakai key "orderId" dulu. Kalau reject, ganti ke "id".
+	// Berdasarkan pola Indodax V2 terbaru, kemungkinan besar key-nya "orderId".
+	delete(params, "id") 
+	params["orderId"] = strconv.FormatInt(orderID, 10)
+
 	query := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(query, c.secretKey)
 
-	// FIX: Tambahin "?" sesuai protokol GET
 	endpoint := BaseURLPrivate + "/api/v2/order?" + query
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
