@@ -5,30 +5,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
+	"net/url" // ← DIPAKAI untuk PathEscape
 	"strings"
 )
 
 // Ticker mengambil data harga pasar lengkap untuk pair tertentu.
 // Mengembalikan struct TickerResponse berisi LastPrice, Bid/Ask, Volume, dll.
 func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error) {
-    // ... build request ...
-    
-    var result TickerResponse
-    if err := json.Unmarshal(body, &result); err != nil {
-        return TickerResponse{}, fmt.Errorf("parse ticker JSON: %w", err)
-    }
-    
-    // Opsional: Validasi langsung di sini kalau mau fail-fast
-    if _, err := result.LastPrice.Float64(); err != nil {
-         return TickerResponse{}, fmt.Errorf("invalid last_price format: %w", err)
-    }
+	// Validasi input dasar
+	if strings.TrimSpace(pair) == "" {
+		return TickerResponse{}, fmt.Errorf("pair cannot be empty")
+	}
 
-    return result, nil
+	// Bangun endpoint dengan escape path biar aman
+	endpoint := BaseURLPublic + "/api/ticker/" + url.PathEscape(strings.ToLower(pair))
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return TickerResponse{}, fmt.Errorf("build ticker request: %w", err)
+	}
+
+	// Eksekusi request via helper internal
+	body, err := c.doRequest(ctx, req) // ← VARIABEL 'body' DIDEKLARASIKAN DI SINI
+	if err != nil {
+		return TickerResponse{}, fmt.Errorf("ticker fetch failed: %w", err)
+	}
+
+	// Parse JSON langsung ke struct TickerResponse
+	var result TickerResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return TickerResponse{}, fmt.Errorf("parse ticker JSON: %w", err)
+	}
+
+	return result, nil
 }
 
 // Pairs mengambil daftar semua pair beserta aturan minimum quantity.
-// Mengembalikan slice PairInfo yang sudah difilter berdasarkan ID pair tertentu jika diperlukan oleh caller.
 func (c *Client) Pairs(ctx context.Context) ([]PairInfo, error) {
 	endpoint := BaseURLPublic + "/api/pairs"
 
@@ -57,12 +69,10 @@ func (c *Client) Pairs(ctx context.Context) ([]PairInfo, error) {
 	for _, p := range arr {
 		minQty, errConv := p.MinQty.Float64()
 		if errConv != nil || minQty <= 0 {
-			// Skip invalid entries atau fallback? 
-			// Keputusan: Skip silent, biarkan caller handle missing pair.
-			continue 
+			continue // Skip invalid entries silently
 		}
 		results = append(results, PairInfo{
-			ID:     strings.ToUpper(p.ID), // Normalize ID to uppercase for consistency
+			ID:     strings.ToUpper(p.ID),
 			MinQty: minQty,
 		})
 	}
