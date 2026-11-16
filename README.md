@@ -1,5 +1,11 @@
 # indodax-go
 
+[![Go Version](https://img.shields.io/badge/Go-1.27.3-00ADD8?logo=go)](https://go.dev/)
+[![Go Reference](https://pkg.go.dev/badge/github.com/MinatoAka/indodax-go.svg)](https://pkg.go.dev/github.com/MinatoAka/indodax-go)
+[![Go Tests](https://github.com/MinatoAka/indodax-go/actions/workflows/go.yml/badge.svg)](https://github.com/MinatoAka/indodax-go/actions/workflows/go.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
+
 ***Standalone Library Go untuk Indodax Trade API v2.***
 
 Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, dan pemisahan jelas antara endpoint Public & Private.
@@ -87,7 +93,7 @@ if err != nil {
     log.Printf("Error balances: %v", err)
 } else {
     fmt.Printf("Saldo IDR: Rp %.2f\n", balances.IDR)
-    fmt.Printf("Saldo ETH (Mentah/String): %s\n", balances.AssetRaw) 
+    fmt.Printf("Saldo ETH (Mentah/String): %s\n", balances.AssetRaw)
     fmt.Printf("Saldo ETH (Float utk gate MinQty): %.8f\n", balances.Asset)
 }
 ```
