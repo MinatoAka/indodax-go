@@ -68,16 +68,19 @@ func main() {
 }
 ```
 
-### 2. Ambil Harga Terakhir (Public - No Auth)
+### 2. Ambil Data Harga Live (Public - No Auth)
 
-Endpoint ini tidak butuh signature. Cepat dan murah.
+Endpoint ini tidak butuh signature.
 
 ```go
-price, err := client.Ticker(ctx, "ethidr")
+ticker, err := client.Ticker(ctx, "ethidr")
 if err != nil {
     log.Printf("Error ticker: %v", err)
 } else {
-    fmt.Printf("Harga ETHIDR saat ini: Rp %.2f\n", price)
+    fmt.Printf("Harga Terakhir : Rp %.2f\n", ticker.LastPrice)
+    fmt.Printf("Best Bid       : Rp %.2f\n", ticker.HighestBid)
+    fmt.Printf("Best Ask       : Rp %.2f\n", ticker.LowestAsk)
+    fmt.Printf("Volume 24H     : %.8f ETH\n", ticker.Volume)
 }
 ```
 
