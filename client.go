@@ -3,6 +3,7 @@ package indodax
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
