@@ -12,6 +12,8 @@ import (
 	"github.com/MinatoAka/hmacgo"
 )
 
+// BaseURLPrivate adalah domain untuk endpoint signed (/api/v2/*).
+// Wajib pakai header X-APIKEY & Sign.
 var BaseURLPrivate = "https://api.indodax.com"
 
 // Balances mengambil saldo IDR dan Aset dasar untuk pair tertentu.
