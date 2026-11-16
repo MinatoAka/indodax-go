@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+// BaseURLPublic adalah domain untuk endpoint tanpa auth (/api/*).
+// Tidak memerlukan kredensial.
+var BaseURLPublic = "https://indodax.com"
+
 // Ticker mengambil data harga pasar lengkap untuk pair tertentu.
 // Mengembalikan struct TickerResponse berisi LastPrice, Bid/Ask, Volume, dll.
 func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error) {
