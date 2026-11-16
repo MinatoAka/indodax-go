@@ -1,5 +1,7 @@
 package indodax
 
+import "encoding/json"
+
 // BalanceResult menyimpan saldo akun.
 // AssetRaw TETAP STRING: exchange truth, no float lossy, no buffer/floor/trim.
 // Normalisasi qty (FormatQty) sengaja TIDAK masuk SDK — itu concern bot/consumer.
@@ -26,12 +28,12 @@ type PairInfo struct {
 // TickerResponse menyimpan data harga pasar terbaru untuk satu pair.
 // Field-field ini diambil langsung dari endpoint public /api/ticker/{pair}.
 type TickerResponse struct {
-	Pair       string  `json:"pair"`        // e.g., "ETHIDR"
-	LastPrice  float64 `json:"last_price"`  // Harga transaksi terakhir
-	LowestAsk  float64 `json:"lowest_ask"`  // Ask terendah saat ini
-	HighestBid float64 `json:"highest_bid"` // Bid tertinggi saat ini
-	Volume     float64 `json:"volume"`      // Volume 24 jam (base asset)
-	Value      float64 `json:"value"`       // Nilai total 24 jam (quote asset/IDR)
+	Pair       string      `json:"pair"`
+	LastPrice  json.Number `json:"last_price"`   // ← GANTI TIPE
+	LowestAsk  json.Number `json:"lowest_ask"`   // ← GANTI TIPE
+	HighestBid json.Number `json:"highest_bid"`  // ← GANTI TIPE
+	Volume     json.Number `json:"volume"`       // ← GANTI TIPE
+	Value      json.Number `json:"value"`        // ← GANTI TIPE
 }
 
 // SubmitOrderRequest adalah payload untuk membuat order baru.
