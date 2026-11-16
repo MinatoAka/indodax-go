@@ -23,6 +23,17 @@ type PairInfo struct {
 	MinQty float64 `json:"trade_min_traded_currency"`
 }
 
+// TickerResponse menyimpan data harga pasar terbaru untuk satu pair.
+// Field-field ini diambil langsung dari endpoint public /api/ticker/{pair}.
+type TickerResponse struct {
+	Pair       string  `json:"pair"`        // e.g., "ETHIDR"
+	LastPrice  float64 `json:"last_price"`  // Harga transaksi terakhir
+	LowestAsk  float64 `json:"lowest_ask"`  // Ask terendah saat ini
+	HighestBid float64 `json:"highest_bid"` // Bid tertinggi saat ini
+	Volume     float64 `json:"volume"`      // Volume 24 jam (base asset)
+	Value      float64 `json:"value"`       // Nilai total 24 jam (quote asset/IDR)
+}
+
 // SubmitOrderRequest adalah payload untuk membuat order baru.
 // Sesuai Doc Resmi: Key wajib adalah 'side', bukan 'type'.
 type SubmitOrderRequest struct {
