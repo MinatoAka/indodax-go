@@ -145,14 +145,19 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
 	}
 
-	// 1. Bangun Params Map
+	// 1. Bangun Params Map — SESUAI DOC RESMI
 	params := map[string]string{
 		"symbol":     reqPayload.Symbol,
-		"type":       strings.ToLower(reqPayload.Type), // "buy" or "sell"
+		"side":       strings.ToUpper(reqPayload.Side),   // ← KEY 'side', VALUE UPPERCASE
+		"type":       strings.ToUpper(reqPayload.Type),   // ← KEY 'type' (LIMIT/MARKET)
 		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
 		"recvWindow": "5000",
 	}
 
+	// Conditional Fields
+	if reqPayload.Price != "" {
+		params["price"] = reqPayload.Price
+	}
 	if reqPayload.Quantity != "" {
 		params["quantity"] = reqPayload.Quantity
 	}
@@ -163,17 +168,12 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		params["timeInForce"] = reqPayload.TimeInForce
 	}
 
-	// 2. Bangun Payload untuk SIGNING (sama persis dengan body yang dikirim)
+	// 2. Signing Payload = Body String (sorted keys via hmacgo.BuildQuery)
 	signingPayload := hmacgo.BuildQuery(params)
-
-	// 3. Generate Signature dari PAYLOAD tersebut
 	signature := hmacgo.SignSHA256(signingPayload, c.secretKey)
 
-	// 4. Siapkan HTTP Request POST
-	// Endpoint TANPA query string (?) karena metode POST membawa data di body
+	// 3. POST Request — URL BERSIH TANPA '?'
 	endpoint := BaseURLPrivate + "/api/v2/order"
-
-	// Body request harus sama persis dengan signingPayload
 	bodyReader := strings.NewReader(signingPayload)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bodyReader)
@@ -181,19 +181,18 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		return OrderResult{}, fmt.Errorf("build submit order request: %w", err)
 	}
 
-	// 5. Set Headers Wajib
+	// 4. Headers Wajib
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-APIKEY", c.apiKey)
 	req.Header.Set("Sign", signature)
 
-	// 6. Execute
+	// 5. Execute & Parse
 	body, err := c.doRequest(ctx, req)
 	if err != nil {
 		return OrderResult{}, fmt.Errorf("submit order failed: %w", err)
 	}
 
-	// 7. Parse Response
 	var response struct {
 		OrderID             int64  `json:"orderId"`
 		ExecutedQty         string `json:"executedQty"`
