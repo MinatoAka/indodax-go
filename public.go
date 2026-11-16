@@ -12,25 +12,19 @@ import (
 // Ticker mengambil data harga pasar lengkap untuk pair tertentu.
 // Mengembalikan struct TickerResponse berisi LastPrice, Bid/Ask, Volume, dll.
 func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error) {
-	endpoint := BaseURLPublic + "/api/ticker/" + url.PathEscape(strings.ToLower(pair))
+    // ... build request ...
+    
+    var result TickerResponse
+    if err := json.Unmarshal(body, &result); err != nil {
+        return TickerResponse{}, fmt.Errorf("parse ticker JSON: %w", err)
+    }
+    
+    // Opsional: Validasi langsung di sini kalau mau fail-fast
+    if _, err := result.LastPrice.Float64(); err != nil {
+         return TickerResponse{}, fmt.Errorf("invalid last_price format: %w", err)
+    }
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return TickerResponse{}, fmt.Errorf("build ticker request: %w", err)
-	}
-
-	body, err := c.doRequest(ctx, req)
-	if err != nil {
-		return TickerResponse{}, fmt.Errorf("ticker fetch failed: %w", err)
-	}
-
-	// Parse ke struct langsung
-	var result TickerResponse
-	if err := json.Unmarshal(body, &result); err != nil {
-		return TickerResponse{}, fmt.Errorf("parse ticker JSON: %w", err)
-	}
-
-	return result, nil
+    return result, nil
 }
 
 // Pairs mengambil daftar semua pair beserta aturan minimum quantity.
