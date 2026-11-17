@@ -16,6 +16,32 @@ import (
 // Wajib pakai header X-APIKEY & Sign.
 var BaseURLPrivate = "https://api.indodax.com"
 
+// IndodaxError merepresentasikan format error standar dari Indodax API v2
+type IndodaxError struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+// checkAPIError adalah helper untuk mendeteksi jika response sebenarnya adalah error
+func checkAPIError(body []byte) error {
+	var errResp IndodaxError
+	if err := json.Unmarshal(body, &errResp); err == nil && errResp.Code != 0 {
+		return fmt.Errorf("indodax api error (code %d): %s", errResp.Code, errResp.Msg)
+	}
+	return nil
+}
+
+// setPrivateHeaders adalah helper untuk set header auth (eliminasi duplikasi)
+// isPost = true akan menambah Content-Type untuk POST request
+func (c *Client) setPrivateHeaders(req *http.Request, signature string, isPost bool) {
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-APIKEY", c.apiKey)
+	req.Header.Set("Sign", signature)
+	if isPost {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+}
+
 // Balances mengambil saldo IDR dan Aset dasar untuk pair tertentu.
 // Sesuai Doc Resmi: GET endpoint -> Parameters via Query String (pakai "?").
 func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, error) {
@@ -39,13 +65,16 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 		return BalanceResult{}, fmt.Errorf("build balances request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-APIKEY", c.apiKey)
-	req.Header.Set("Sign", signature)
+	c.setPrivateHeaders(req, signature, false)
 
 	body, err := c.doRequest(ctx, req)
 	if err != nil {
-		return BalanceResult{}, fmt.Errorf("balances fetch failed: %w", err)
+		return BalanceResult{}, fmt.Errorf("balances fetch failed (pair: %s): %w", pair, err)
+	}
+
+	// Cek apakah ini sebenarnya response error dari Indodax
+	if err := checkAPIError(body); err != nil {
+		return BalanceResult{}, err
 	}
 
 	var response struct {
@@ -118,14 +147,17 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		return OrderResult{}, fmt.Errorf("build submit order request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-APIKEY", c.apiKey)
-	req.Header.Set("Sign", signature)
+	c.setPrivateHeaders(req, signature, true)
 
 	body, err := c.doRequest(ctx, req)
 	if err != nil {
-		return OrderResult{}, fmt.Errorf("submit order failed: %w", err)
+		return OrderResult{}, fmt.Errorf("submit order failed (symbol: %s, side: %s): %w", 
+			reqPayload.Symbol, reqPayload.Side, err)
+	}
+
+	// Cek apakah ini sebenarnya response error dari Indodax
+	if err := checkAPIError(body); err != nil {
+		return OrderResult{}, err
 	}
 
 	var response OrderResult
