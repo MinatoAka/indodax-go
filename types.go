@@ -28,12 +28,14 @@ type PairInfo struct {
 // TickerResponse menyimpan data harga pasar terbaru untuk satu pair.
 // Field-field ini diambil langsung dari endpoint public /api/ticker/{pair}.
 type TickerResponse struct {
-	Pair       string      `json:"pair"`
-	LastPrice  json.Number `json:"last_price"`   // ← JSON.NUMBER
-	LowestAsk  json.Number `json:"lowest_ask"`   // ← JSON.NUMBER
-	HighestBid json.Number `json:"highest_bid"`  // ← JSON.NUMBER
-	Volume     json.Number `json:"volume"`       // ← JSON.NUMBER
-	Value      json.Number `json:"value"`        // ← JSON.NUMBER
+	Ticker struct {
+		Buy        json.Number `json:"buy"`         // Highest Bid
+		Sell       json.Number `json:"sell"`        // Lowest Ask
+		Last       json.Number `json:"last"`        // Last Traded Price
+		High       json.Number `json:"high"`        // Harga Tertinggi Hari Ini
+		Low        json.Number `json:"low"`         // Harga Terendah Hari Ini
+		ServerTime int64       `json:"server_time"` // Validasi Clock Drift
+	} `json:"ticker"`
 }
 
 // SubmitOrderRequest adalah payload untuk membuat order baru.
@@ -49,14 +51,27 @@ type SubmitOrderRequest struct {
 }
 
 
-// GetLastPrice mengkonversi LastPrice dari json.Number ke float64.
+// GetLastPrice mengkonversi Last dari json.Number ke float64.
 func (t TickerResponse) GetLastPrice() (float64, error) {
-	return t.LastPrice.Float64()
+	return t.Ticker.Last.Float64()
 }
 
-// GetLowestAsk mengkonversi LowestAsk dari json.Number ke float64.
+// GetHighestBid mengkonversi Buy dari json.Number ke float64.
+func (t TickerResponse) GetHighestBid() (float64, error) {
+	return t.Ticker.Buy.Float64()
+}
+
+// GetLowestAsk mengkonversi Sell dari json.Number ke float64.
 func (t TickerResponse) GetLowestAsk() (float64, error) {
-	return t.LowestAsk.Float64()
+	return t.Ticker.Sell.Float64()
 }
 
-// ... similarly for HighestBid, Volume, Value ...
+// GetDayHigh mengkonversi High dari json.Number ke float64.
+func (t TickerResponse) GetDayHigh() (float64, error) {
+	return t.Ticker.High.Float64()
+}
+
+// GetDayLow mengkonversi Low dari json.Number ke float64.
+func (t TickerResponse) GetDayLow() (float64, error) {
+	return t.Ticker.Low.Float64()
+}
