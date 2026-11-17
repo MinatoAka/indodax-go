@@ -83,27 +83,27 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 	return res, nil
 }
 
-// OrderStatus mengambil detail order berdasarkan OrderID DAN Symbol Pair.
-// Sesuai Doc Resmi: GET /api/v2/order membutuhkan parameter 'symbol' (mandatory).
-func (c *Client) OrderStatus(ctx context.Context, pair string, orderID int64) (OrderResult, error) {
+// OrderStatus mengambil detail order berdasarkan OrderID atau ClientOrderID (origClientOrderId).
+// Sesuai Doc Resmi: GET /api/v2/order membutuhkan 'symbol' dan salah satu identifier (orderId / origClientOrderId).
+func (c *Client) OrderStatus(ctx context.Context, pair string, orderID int64, clientOrderID string) (OrderResult, error) {
 	if c.apiKey == "" || c.secretKey == "" {
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
 	}
 
 	params := map[string]string{
-	"symbol":     strings.ToUpper(pair),
-	"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
-	"recvWindow": "5000",
-    }
+		"symbol":     strings.ToUpper(pair),
+		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
+		"recvWindow": "5000",
+	}
 
-    // Masukkan orderId jika ada
-    if orderID > 0 {
-	    params["orderId"] = strconv.FormatInt(orderID, 10)
-    } 
-    // Atau masukkan origClientOrderId jika orderID kosong
-    if clientOrderID != "" {
-	    params["origClientOrderId"] = clientOrderId
-    }
+	// Masukkan orderId jika ada, jika tidak cek clientOrderID (origClientOrderId)
+	if orderID > 0 {
+		params["orderId"] = strconv.FormatInt(orderID, 10)
+	} else if clientOrderID != "" {
+		params["origClientOrderId"] = clientOrderID
+	} else {
+		return OrderResult{}, fmt.Errorf("wajib menyertakan orderID atau clientOrderID")
+	}
 
 	query := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(query, c.secretKey)
@@ -124,30 +124,12 @@ func (c *Client) OrderStatus(ctx context.Context, pair string, orderID int64) (O
 		return OrderResult{}, fmt.Errorf("order status fetch failed: %w", err)
 	}
 
-	var response struct {
-		OrderID             int64  `json:"orderId"`
-		ExecutedQty         string `json:"executedQty"`
-		CummulativeQuoteQty string `json:"cummulativeQuoteQty"`
-	}
-
+	var response OrderResult
 	if err := json.Unmarshal(body, &response); err != nil {
 		return OrderResult{}, fmt.Errorf("parse order status JSON: %w", err)
 	}
 
-	eq, _ := strconv.ParseFloat(response.ExecutedQty, 64)
-	cq, _ := strconv.ParseFloat(response.CummulativeQuoteQty, 64)
-
-	price := 0.0
-	if eq > 0 && cq > 0 {
-		price = cq / eq
-	}
-
-	return OrderResult{
-		OrderID:     response.OrderID,
-		ExecutedQty: eq,
-		CumQuoteQty: cq,
-		Price:       price,
-	}, nil
+	return response, nil
 }
 
 // SubmitOrder mengirim order baru (BUY/SELL).
