@@ -91,17 +91,19 @@ func (c *Client) OrderStatus(ctx context.Context, pair string, orderID int64) (O
 	}
 
 	params := map[string]string{
-		"symbol":     strings.ToUpper(pair),           // ← WAJIB ADA
-		"id":         strconv.FormatInt(orderID, 10),  // ← Doc sebut 'orderId', tapi query param biasanya 'id' atau 'orderId'. Cek doc lagi.
-		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
-		"recvWindow": "5000",
-	}
+	"symbol":     strings.ToUpper(pair),
+	"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
+	"recvWindow": "5000",
+    }
 
-	// NOTE: Di doc table tertulis "orderId", tapi di contoh legacy sering pakai "id". 
-	// Untuk safety, coba pakai key "orderId" dulu. Kalau reject, ganti ke "id".
-	// Berdasarkan pola Indodax V2 terbaru, kemungkinan besar key-nya "orderId".
-	delete(params, "id") 
-	params["orderId"] = strconv.FormatInt(orderID, 10)
+    // Masukkan orderId jika ada
+    if orderID > 0 {
+	    params["orderId"] = strconv.FormatInt(orderID, 10)
+    } 
+    // Atau masukkan origClientOrderId jika orderID kosong
+    if clientOrderID != "" {
+	    params["origClientOrderId"] = clientOrderId
+    }
 
 	query := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(query, c.secretKey)
@@ -155,34 +157,26 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
 	}
 
-	// 1. Bangun Params Map — SESUAI DOC RESMI
+	// Bangun Params dasar (Type di-hardcode MARKET)
 	params := map[string]string{
 		"symbol":     reqPayload.Symbol,
-		"side":       strings.ToUpper(reqPayload.Side),   // ← KEY 'side', VALUE UPPERCASE
-		"type":       strings.ToUpper(reqPayload.Type),   // ← KEY 'type' (LIMIT/MARKET)
+		"side":       strings.ToUpper(reqPayload.Side),
+		"type":       "MARKET",
 		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
 		"recvWindow": "5000",
 	}
 
-	// Conditional Fields
-	if reqPayload.Price != "" {
-		params["price"] = reqPayload.Price
-	}
+	// Hanya masukkan quantity (untuk SELL) atau quoteOrderQty (untuk BUY)
 	if reqPayload.Quantity != "" {
 		params["quantity"] = reqPayload.Quantity
 	}
 	if reqPayload.QuoteOrderQty != "" {
 		params["quoteOrderQty"] = reqPayload.QuoteOrderQty
 	}
-	if reqPayload.TimeInForce != "" {
-		params["timeInForce"] = reqPayload.TimeInForce
-	}
 
-	// 2. Signing Payload = Body String (sorted keys via hmacgo.BuildQuery)
 	signingPayload := hmacgo.BuildQuery(params)
 	signature := hmacgo.SignSHA256(signingPayload, c.secretKey)
 
-	// 3. POST Request — URL BERSIH TANPA '?'
 	endpoint := BaseURLPrivate + "/api/v2/order"
 	bodyReader := strings.NewReader(signingPayload)
 
@@ -191,40 +185,20 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 		return OrderResult{}, fmt.Errorf("build submit order request: %w", err)
 	}
 
-	// 4. Headers Wajib
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-APIKEY", c.apiKey)
 	req.Header.Set("Sign", signature)
 
-	// 5. Execute & Parse
 	body, err := c.doRequest(ctx, req)
 	if err != nil {
 		return OrderResult{}, fmt.Errorf("submit order failed: %w", err)
 	}
 
-	var response struct {
-		OrderID             int64  `json:"orderId"`
-		ExecutedQty         string `json:"executedQty"`
-		CummulativeQuoteQty string `json:"cummulativeQuoteQty"`
-	}
-
+	var response OrderResult
 	if err := json.Unmarshal(body, &response); err != nil {
 		return OrderResult{}, fmt.Errorf("parse submit order JSON: %w", err)
 	}
 
-	eq, _ := strconv.ParseFloat(response.ExecutedQty, 64)
-	cq, _ := strconv.ParseFloat(response.CummulativeQuoteQty, 64)
-
-	price := 0.0
-	if eq > 0 && cq > 0 {
-		price = cq / eq
-	}
-
-	return OrderResult{
-		OrderID:     response.OrderID,
-		ExecutedQty: eq,
-		CumQuoteQty: cq,
-		Price:       price,
-	}, nil
+	return response, nil
 }
