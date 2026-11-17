@@ -142,23 +142,6 @@ if err != nil {
 }
 ```
 
-### 5. Cek Status Order (Private - Signed GET)
-
-Endpoint `GET` /api/v2/order mewajibkan parameter `symbol` serta salah satu identifier (`orderId` numerik atau `origClientOrderId` yang didapat dari output `clientOrderId` saat submit order).
-
-```go
-// Cek menggunakan orderId numerik (isi clientOrderID dengan string kosong "")
-status, err := client.OrderStatus(ctx, "ETHIDR", sellRes.OrderID, "")
-if err != nil {
-    log.Printf("Error order status: %v", err)
-} else {
-    fmt.Printf("Status: %s | ExecutedQty: %s | Price: %s\n", status.Status, status.ExecutedQty, status.Price)
-}
-
-// Atau cek menggunakan origClientOrderId (isi orderID dengan 0)
-statusByClientID, err := client.OrderStatus(ctx, "ETHIDR", 0, sellRes.ClientOrderID)
-```
-
 ## 🛠️ Arsitektur & Design Choices
 
 | Komponen | Implementasi | Alasan Teknis |
