@@ -10,18 +10,14 @@ import (
 )
 
 // BaseURLPublic adalah domain untuk endpoint tanpa auth (/api/*).
-// Tidak memerlukan kredensial.
 var BaseURLPublic = "https://indodax.com"
 
 // Ticker mengambil data harga pasar lengkap untuk pair tertentu.
-// Mengembalikan struct TickerResponse berisi LastPrice, Bid/Ask, Volume, dll.
 func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error) {
-	// Validasi input dasar
 	if strings.TrimSpace(pair) == "" {
 		return TickerResponse{}, fmt.Errorf("pair cannot be empty")
 	}
 
-	// Bangun endpoint dengan escape path biar aman
 	endpoint := BaseURLPublic + "/api/ticker/" + url.PathEscape(strings.ToLower(pair))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -29,13 +25,11 @@ func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error
 		return TickerResponse{}, fmt.Errorf("build ticker request: %w", err)
 	}
 
-	// Eksekusi request via helper internal
-	body, err := c.doRequest(ctx, req) // ← VARIABEL 'body' DIDEKLARASIKAN DI SINI
+	body, err := c.doRequest(ctx, req) 
 	if err != nil {
 		return TickerResponse{}, fmt.Errorf("ticker fetch failed: %w", err)
 	}
 
-	// Parse JSON langsung ke struct TickerResponse
 	var result TickerResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		return TickerResponse{}, fmt.Errorf("parse ticker JSON: %w", err)
@@ -73,7 +67,7 @@ func (c *Client) Pairs(ctx context.Context) ([]PairInfo, error) {
 	for _, p := range arr {
 		minQty, errConv := p.MinQty.Float64()
 		if errConv != nil || minQty <= 0 {
-			continue // Skip invalid entries silently
+			continue 
 		}
 		results = append(results, PairInfo{
 			ID:     strings.ToUpper(p.ID),
