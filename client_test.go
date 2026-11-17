@@ -147,7 +147,7 @@ func TestSubmitOrder_PostBodySigning(t *testing.T) {
 
 	reqPayload := SubmitOrderRequest{
 		Symbol:   "ethidr",
-		Type:     "SELL",
+		Side:     "SELL",
 		Quantity: expectedQty,
 	}
 
