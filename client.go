@@ -1,7 +1,6 @@
 package indodax
 
 import (
-	"strconv"
 	"strings"
 	"context"
 	"fmt"
@@ -137,6 +136,6 @@ func (c *Client) PlaceMarketSell(ctx context.Context, pair string, coinAmountRaw
 	return c.SubmitOrder(ctx, SubmitOrderRequest{
 		Symbol:   strings.ToUpper(pair),
 		Side:     "SELL",
-		Quantity: coinAmountRaw, // Langsung string mentah
+		Quantity: coinAmountRaw,
 	})
 }
