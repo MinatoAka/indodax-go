@@ -170,14 +170,18 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 			t.Error("Public endpoint should not send Sign")
 		}
 
+		// REAL RESPONSE FORMAT: Nested Object "ticker"
 		resp := map[string]interface{}{
-			"pair":       "ETHIDR",
-			"last_price": "33570000", // String sesuai format JSON Indodax biasanya
-			"lowest_ask": "33571000",
-			"highest_bid":"33569000",
-			"volume":     "120.5",
-			"value":      "4045282500",
+			"ticker": map[string]interface{}{
+				"buy":         "33569000", // Highest Bid
+				"sell":        "33571000", // Lowest Ask
+				"last":        "33570000", // Last Traded Price
+				"high":        "34157000", // Day High
+				"low":         "32901000", // Day Low
+				"server_time": 1794876675, // Unix Timestamp
+			},
 		}
+		
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	}
@@ -186,18 +190,47 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 	defer cleanup()
 
 	res, err := client.Ticker(context.Background(), "ethidr")
-    if err != nil {
-        t.Fatalf("Ticker error: %v", err)
-    }
+	if err != nil {
+		t.Fatalf("Ticker error: %v", err)
+	}
 
-    // Convert json.Number ke float64 dulu sebelum compare
-    lp, _ := res.LastPrice.Float64()
-    if lp != 33570000.0 {
-        t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", lp)
-    }
+	// VALIDASI FIELD BARU (Nested Access)
+	
+	// 1. Cek Last Price via Helper Method
+	lp, errLP := res.GetLastPrice()
+	if errLP != nil {
+		t.Fatalf("GetLastPrice failed: %v", errLP)
+	}
+	if lp != 33570000.0 {
+		t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", lp)
+	}
 
-    hb, _ := res.HighestBid.Float64()
-    if hb != 33569000.0 {
-        t.Errorf("HighestBid Mismatch. Got: %f, Want: 33569000.0", hb)
-    }
+	// 2. Cek Highest Bid (Field 'buy')
+	hb, errHB := res.GetHighestBid()
+	if errHB != nil {
+		t.Fatalf("GetHighestBid failed: %v", errHB)
+	}
+	if hb != 33569000.0 {
+		t.Errorf("HighestBid Mismatch. Got: %f, Want: 33569000.0", hb)
+	}
+
+	// 3. Cek Lowest Ask (Field 'sell')
+	la, errLA := res.GetLowestAsk()
+	if errLA != nil {
+		t.Fatalf("GetLowestAsk failed: %v", errLA)
+	}
+	if la != 33571000.0 {
+		t.Errorf("LowestAsk Mismatch. Got: %f, Want: 33571000.0", la)
+	}
+
+	// 4. Cek Day High & Low (Opsional tapi disarankan buat completeness)
+	dh, _ := res.GetDayHigh()
+	if dh != 34157000.0 {
+		t.Errorf("DayHigh Mismatch. Got: %f, Want: 34157000.0", dh)
+	}
+	
+	dl, _ := res.GetDayLow()
+	if dl != 32901000.0 {
+		t.Errorf("DayLow Mismatch. Got: %f, Want: 32901000.0", dl)
+	}
 }
