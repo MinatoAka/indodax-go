@@ -78,10 +78,10 @@ ticker, err := client.Ticker(ctx, "ethidr")
 if err != nil {
     log.Printf("Error ticker: %v", err)
 } else {
-    // Konversi json.Number ke float64 via helper
-    lastPrice, _ := ticker.LastPrice.Float64()
-    bestBid, _   := ticker.HighestBid.Float64()
-    bestAsk, _   := ticker.LowestAsk.Float64()
+    // Akses data via Helper Method (menghandle konversi json.Number ke float64 secara aman)
+    lastPrice, _ := ticker.GetLastPrice()
+    bestBid, _   := ticker.GetHighestBid()
+    bestAsk, _   := ticker.GetLowestAsk()
     
     fmt.Printf("Harga Terakhir : Rp %.2f\n", lastPrice)
     fmt.Printf("Best Bid       : Rp %.2f\n", bestBid)
