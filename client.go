@@ -133,10 +133,10 @@ func (c *Client) PlaceMarketBuy(ctx context.Context, pair string, idrAmount floa
 }
 
 // PlaceMarketSell melakukan penjualan instan menggunakan jumlah koin (quantity).
-func (c *Client) PlaceMarketSell(ctx context.Context, pair string, coinAmount float64) (OrderResult, error) {
+func (c *Client) PlaceMarketSell(ctx context.Context, pair string, coinAmountRaw string) (OrderResult, error) {
 	return c.SubmitOrder(ctx, SubmitOrderRequest{
 		Symbol:   strings.ToUpper(pair),
 		Side:     "SELL",
-		Quantity: strconv.FormatFloat(coinAmount, 'f', 8, 64),
+		Quantity: coinAmountRaw, // Langsung string mentah
 	})
 }
