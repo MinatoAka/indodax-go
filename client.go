@@ -1,6 +1,8 @@
 package indodax
 
 import (
+	"strconv"
+	"strings"
 	"context"
 	"fmt"
 	"io"
