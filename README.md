@@ -8,26 +8,27 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
 
-***Standalone Library Go untuk Indodax [Offical Trade API v2](https://github.com/btcid/indodax-official-api-docs)***
+***Standalone Library Go untuk Indodax [Official Trade API v2](https://github.com/btcid/indodax-official-api-docs)***[span_3](start_span)[span_3](end_span)
 
-Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, dan pemisahan jelas antara endpoint Public & Private.
+Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, fokus pada eksekusi **Market Order**, serta pemisahan jelas antara endpoint Public & Private[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span).
 
 > ⚠️ **Catatan Penting:**  
-> Proyek ini adalah implementasi pihak ketiga (*third-party*) yang tidak berafiliasi dengan Indodax.  
-> Pastikan Anda memahami dokumentasi resmi sebelum digunakan dalam produksi.
+> Proyek ini adalah implementasi pihak ketiga (*third-party*) yang tidak berafiliasi dengan Indodax[span_6](start_span)[span_6](end_span).  
+> Pastikan Anda memahami dokumentasi resmi sebelum digunakan dalam produksi[span_7](start_span)[span_7](end_span).
 
 ## ✨ Fitur Utama
 
-- **Pemisahan Domain Fisik:** Base URL terpisah (`api.indodax.com` untuk private/signed, `indodax.com` untuk public/no-auth). Ini mencegah error routing 404/HTML yang membingungkan.
-- **Presisi Aset Maksimal:** Saldo aset dikembalikan sebagai string mentah (`AssetRaw`). Tidak ada konversi float lossy di layer SDK. Consumer bebas memutuskan normalisasi (floor/trim/verbatim) sesuai aturan exchange.
-- **Signing Otomatis & Deterministik:** Integrasi penuh dengan `hmacgo` untuk HMAC-SHA256. Payload GET berupa query string sorted, payload POST berupa body form-encoded. Sesuai protokol resmi TAPI v2.
-- **Context Support Penuh:** Semua method menerima `context.Context` untuk timeout & cancellation. Aman dari hanging request.
-- **Zero Coupling Config:** Tidak bergantung pada struct config bot tertentu. Cukup inisialisasi client sekali dengan kredensial.
+- **Pemisahan Domain Fisik:** Base URL terpisah (`api.indodax.com` untuk private/signed, `indodax.com` untuk public/no-auth) untuk mencegah error routing[span_8](start_span)[span_8](end_span)[span_9](start_span)[span_9](end_span)[span_10](start_span)[span_10](end_span).
+- **Presisi Aset Maksimal:** Saldo aset dikembalikan sebagai string mentah (`AssetRaw`) tanpa konversi float *lossy* di layer SDK, sehingga mencegah error validasi presisi (`-1111`)[span_11](start_span)[span_11](end_span)[span_12](start_span)[span_12](end_span)[span_13](start_span)[span_13](end_span)[span_14](start_span)[span_14](end_span).
+- **Fokus Market Order:** Mendukung penuh spesifikasi TAPI v2 untuk eksekusi instan (`quoteOrderQty` untuk `BUY` dan `quantity` untuk `SELL`)[span_15](start_span)[span_15](end_span)[span_16](start_span)[span_16](end_span)[span_17](start_span)[span_17](end_span).
+- **Signing Otomatis & Deterministik:** Integrasi penuh dengan `hmacgo` untuk HMAC-SHA256 sesuai protokol resmi TAPI v2 (query string untuk GET, form-encoded body untuk POST)[span_18](start_span)[span_18](end_span)[span_19](start_span)[span_19](end_span)[span_20](start_span)[span_20](end_span).
+- **Context Support Penuh:** Semua method menerima `context.Context` untuk manajemen timeout & cancellation[span_21](start_span)[span_21](end_span)[span_22](start_span)[span_22](end_span)[span_23](start_span)[span_23](end_span)[span_24](start_span)[span_24](end_span).
+- **Zero Coupling Config:** Tidak bergantung pada struct config bot tertentu[span_25](start_span)[span_25](end_span). Cukup inisialisasi client sekali dengan kredensial[span_26](start_span)[span_26](end_span)[span_27](start_span)[span_27](end_span).
 
 ## 🚀 Instalasi
 
 ```bash
-go get github.com/MinatoAka/indodax-go@main
+go get [github.com/MinatoAka/indodax-go@main](https://github.com/MinatoAka/indodax-go@main)
 ```
 
 ## ⚡ Quick Start
