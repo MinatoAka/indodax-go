@@ -17,12 +17,8 @@ type OrderResult struct {
 	ClientOrderID string `json:"clientOrderId,omitempty"`
 	Side          string `json:"side,omitempty"`
 	Type          string `json:"type,omitempty"`
-	Price         string `json:"price,omitempty"`     // Kosong jika MARKET order
-	StopPrice     string `json:"stopPrice,omitempty"`
 	OrigQty       string `json:"origQty,omitempty"`
 	ExecutedQty   string `json:"executedQty"`
-	Status        string `json:"status,omitempty"`    // Hanya muncul di Get Order
-	Time          int64  `json:"time,omitempty"`      // Hanya muncul di Get Order
 	FullOrderID   string `json:"fullOrderId,omitempty"`
 }
 
