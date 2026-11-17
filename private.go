@@ -83,55 +83,6 @@ func (c *Client) Balances(ctx context.Context, pair string) (BalanceResult, erro
 	return res, nil
 }
 
-// OrderStatus mengambil detail order berdasarkan OrderID atau ClientOrderID (origClientOrderId).
-// Sesuai Doc Resmi: GET /api/v2/order membutuhkan 'symbol' dan salah satu identifier (orderId / origClientOrderId).
-func (c *Client) OrderStatus(ctx context.Context, pair string, orderID int64, clientOrderID string) (OrderResult, error) {
-	if c.apiKey == "" || c.secretKey == "" {
-		return OrderResult{}, fmt.Errorf("missing credentials for private endpoint")
-	}
-
-	params := map[string]string{
-		"symbol":     strings.ToUpper(pair),
-		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
-		"recvWindow": "5000",
-	}
-
-	// Masukkan orderId jika ada, jika tidak cek clientOrderID (origClientOrderId)
-	if orderID > 0 {
-		params["orderId"] = strconv.FormatInt(orderID, 10)
-	} else if clientOrderID != "" {
-		params["origClientOrderId"] = clientOrderID
-	} else {
-		return OrderResult{}, fmt.Errorf("wajib menyertakan orderID atau clientOrderID")
-	}
-
-	query := hmacgo.BuildQuery(params)
-	signature := hmacgo.SignSHA256(query, c.secretKey)
-
-	endpoint := BaseURLPrivate + "/api/v2/order?" + query
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
-	if err != nil {
-		return OrderResult{}, fmt.Errorf("build order status request: %w", err)
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-APIKEY", c.apiKey)
-	req.Header.Set("Sign", signature)
-
-	body, err := c.doRequest(ctx, req)
-	if err != nil {
-		return OrderResult{}, fmt.Errorf("order status fetch failed: %w", err)
-	}
-
-	var response OrderResult
-	if err := json.Unmarshal(body, &response); err != nil {
-		return OrderResult{}, fmt.Errorf("parse order status JSON: %w", err)
-	}
-
-	return response, nil
-}
-
 // SubmitOrder mengirim order baru (BUY/SELL).
 // Sesuai Doc Resmi: POST endpoint -> Parameters via Request Body (NO "?" di URL).
 func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest) (OrderResult, error) {
