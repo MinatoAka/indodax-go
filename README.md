@@ -26,7 +26,7 @@ Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, dan pemis
 ## 🚀 Instalasi
 
 ```bash
-go get github.com/MinatoAka/indodax-go@latest
+go get github.com/MinatoAka/indodax-go@main
 ```
 
 ## ⚡ Quick Start
