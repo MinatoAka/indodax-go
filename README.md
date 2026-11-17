@@ -112,33 +112,43 @@ if err != nil {
 
 Sesuai dokumentasi TAPI v2, `type` otomatis diset ke `MARKET`. Gunakan `QuoteOrderQty` (nominal IDR) untuk `BUY`, atau `Quantity` (jumlah aset) untuk `SELL`.  
 
-```go
-// Contoh A: Market BUY senilai Rp 100.000
-buyReq := indodax.SubmitOrderRequest{
-    Symbol:        "ETHIDR",
-    Side:          "BUY",
-    QuoteOrderQty: "100000", // Wajib diisi untuk BUY (dalam IDR)
-}
+## 🚀 Quick Start Examples
 
-buyRes, err := client.SubmitOrder(ctx, buyReq)
+### 1. Market BUY (Nominal IDR)
+Gunakan helper `PlaceMarketBuy`. Ini mencegah salah input parameter (seperti tukar-balik Quantity vs QuoteOrderQty).
+
+```go
+ctx := context.Background()
+
+// Beli ETH senilai Rp 100.000
+buyRes, err := client.PlaceMarketBuy(ctx, "ETHIDR", 100000.00)
 if err != nil {
     log.Printf("Error submit buy: %v", err)
 } else {
-    fmt.Printf("Buy Order Placed! OrderID: %d | ClientOrderID: %s\n", buyRes.OrderID, buyRes.ClientOrderID)
+    // Validasi sukses instan: OrderID > 0
+    if buyRes.OrderID > 0 {
+        fmt.Printf("[✓] BUY Success | ID: %d | Qty Filled: %s\n", 
+            buyRes.OrderID, buyRes.ExecutedQty)
+    }
 }
+```
 
-// Contoh B: Market SELL seluruh saldo aset
-sellReq := indodax.SubmitOrderRequest{
-    Symbol:   "ETHIDR",
-    Side:     "SELL",
-    Quantity: balances.AssetRaw, // Wajib pakai string mentah dari Balances()
-}
+### 2. Market SELL (Jumlah Koin)
+Gunakan helper `PlaceMarketSell`. Pastikan menggunakan saldo riil dari API `Balances()` untuk menghindari rejection karena floating point error.
 
-sellRes, err := client.SubmitOrder(ctx, sellReq)
+```go
+// Asumsi sudah panggil balances sebelumnya
+balances, _ := client.Balances(ctx, "ETHIDR")
+
+// Jual seluruh saldo ETH yang dimiliki
+sellRes, err := client.PlaceMarketSell(ctx, "ETHIDR", balances.Asset)
 if err != nil {
     log.Printf("Error submit sell: %v", err)
 } else {
-    fmt.Printf("Sell Order Placed! OrderID: %d | ExecutedQty: %s\n", sellRes.OrderID, sellRes.ExecutedQty)
+    if sellRes.OrderID > 0 {
+        fmt.Printf("[✓] SELL Success | ID: %d | Qty Sold: %s\n", 
+            sellRes.OrderID, sellRes.ExecutedQty)
+    }
 }
 ```
 
