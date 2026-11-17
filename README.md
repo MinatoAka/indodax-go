@@ -112,10 +112,8 @@ if err != nil {
 
 Sesuai dokumentasi TAPI v2, `type` otomatis diset ke `MARKET`. Gunakan `QuoteOrderQty` (nominal IDR) untuk `BUY`, atau `Quantity` (jumlah aset) untuk `SELL`.  
 
-## 🚀 Quick Start Examples
-
-### 1. Market BUY (Nominal IDR)
-Gunakan helper `PlaceMarketBuy`. Ini mencegah salah input parameter (seperti tukar-balik Quantity vs QuoteOrderQty).
+- Market BUY (Nominal IDR)
+  Gunakan helper `PlaceMarketBuy`. Ini mencegah salah input parameter (seperti tukar-balik Quantity vs QuoteOrderQty).
 
 ```go
 ctx := context.Background()
@@ -133,8 +131,8 @@ if err != nil {
 }
 ```
 
-### 2. Market SELL (Jumlah Koin)
-Gunakan helper `PlaceMarketSell`. Pastikan menggunakan saldo riil dari API `Balances()` untuk menghindari rejection karena floating point error.
+- Market SELL (Jumlah Koin)
+  Gunakan helper `PlaceMarketSell`. Pastikan menggunakan saldo riil dari API `Balances()` untuk menghindari rejection karena floating point error.
 
 ```go
 // Asumsi sudah panggil balances sebelumnya
