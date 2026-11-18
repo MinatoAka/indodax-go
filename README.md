@@ -196,12 +196,12 @@ Menyimpan detail transaksi. Angka desimal disimpan sebagai `string` untuk menceg
 
 ### 3. `TickerResponse` (dari `Ticker`)
 Data pasar *real-time*. Menggunakan `json.Number` untuk mencegah *error parsing* tipe data.
-*   Akses nilainya menggunakan *helper methods*:
-*   `.GetLastPrice()`,
-*   `.GetHighestBid()`,
-*   `.GetLowestAsk()`,
-*   `.GetDayHigh()`,
-*   `.GetDayLow()`.
+> Akses nilainya menggunakan *helper methods*:
+* `.GetLastPrice()`,
+* `.GetHighestBid()`,
+* `.GetLowestAsk()`,
+* `.GetDayHigh()`,
+* `.GetDayLow()`.
 
 ### 4. `PairInfo`
 | Field | Tipe | Deskripsi |
