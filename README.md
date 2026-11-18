@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
 
-***Standalone Library Go untuk Indodax [Official Trade API v2](https://github.com/btcid/indodax-official-api-docs)***
+***Standalone Library Go untuk [Indodax Official Trade API v2](https://github.com/btcid/indodax-official-api-docs)***
 
 Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, fokus pada eksekusi **Market Order**, serta pemisahan jelas antara endpoint Public & Private.
 
