@@ -139,7 +139,7 @@ if err != nil {
 balances, _ := client.Balances(ctx, "ETHIDR")
 
 // Jual seluruh saldo ETH yang dimiliki
-sellRes, err := client.PlaceMarketSell(ctx, "ETHIDR", balances.Asset)
+sellRes, err := client.PlaceMarketSell(ctx, "ETHIDR", balances.AssetRaw)
 if err != nil {
     log.Printf("Error submit sell: %v", err)
 } else {
