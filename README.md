@@ -170,6 +170,46 @@ Unit tests menggunakan `httptest.Server` lokal (mock server). Tidak butuh koneks
 go test -v ./...
 ```
 
+## 📦 Data Types (Response)
+
+SDK ini mengembalikan data mentah dari API dengan presisi tinggi. Berikut adalah struct utama yang akan Anda terima:
+
+### 1. `OrderResult` (`BUY` & `SELL`)
+Menyimpan detail transaksi. Angka desimal disimpan sebagai `string` untuk mencegah *floating-point loss*.
+
+| Field | Tipe | Deskripsi |
+| :--- | :--- | :--- |
+| `Symbol` | `string` | Trading pair symbol. |
+| `OrderID` | `int64` | Unique identifier for the order. |
+| `Side` | `string` | Order side (`BUY` or `SELL`). |
+| `Type` | `string` | Order type (`MARKET`). |
+| `OrigQty` | `string` | Original order quantity. |
+| `ExecutedQty` | `string` | Quantity that had already been executed before cancellation. |
+| `FullOrderID` | `string` | System-generated order reference (`ethidr-market-6423`) |
+
+### 2. `BalanceResult`
+| Field | Tipe | Deskripsi |
+| :--- | :--- | :--- |
+| `IDR` | `float64` | Saldo IDR |
+| `Asset` | `float64` | Saldo aset/coin |
+| `AssetRaw` | `string` | Saldo aset **mentah** dari API. |
+
+### 3. `TickerResponse` (dari `Ticker`)
+Data pasar *real-time*. Menggunakan `json.Number` untuk mencegah *error parsing* tipe data.
+*   Akses nilainya menggunakan *helper methods*:
+*   `.GetLastPrice()`,
+*   `.GetHighestBid()`,
+*   `.GetLowestAsk()`,
+*   `.GetDayHigh()`,
+*   `.GetDayLow()`.
+
+### 4. `PairInfo`
+| Field | Tipe | Deskripsi |
+| :--- | :--- | :--- |
+| `ID` | `string` | Nama pair (contoh: `ETHIDR`). |
+| `MinQty` | `float64` | Batas minimum kuantitas yang boleh ditransaksikan. |
+
+
 ## 🤝 Support & Exchange
 
 Silakan mendaftar melalui tautan resmi berikut:
