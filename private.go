@@ -16,17 +16,11 @@ import (
 // Wajib pakai header X-APIKEY & Sign.
 var BaseURLPrivate = "https://api.indodax.com"
 
-// IndodaxError merepresentasikan format error standar dari Indodax API v2
-type IndodaxError struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-}
-
 // checkAPIError adalah helper untuk mendeteksi jika response sebenarnya adalah error
 func checkAPIError(body []byte) error {
 	var errResp IndodaxError
 	if err := json.Unmarshal(body, &errResp); err == nil && errResp.Code != 0 {
-		return fmt.Errorf("indodax api error (code %d): %s", errResp.Code, errResp.Msg)
+		return &errResp // Return pointer agar method di types.go bisa dipanggil
 	}
 	return nil
 }
