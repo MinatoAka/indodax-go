@@ -51,8 +51,6 @@ type OrderResult struct {
 	ClientOrderID string `json:"clientOrderId,omitempty"`
 	Side          string `json:"side,omitempty"`
 	Type          string `json:"type,omitempty"`
-	OrigQty       string `json:"origQty,omitempty"`
-	ExecutedQty   string `json:"executedQty"`
 	FullOrderID   string `json:"fullOrderId,omitempty"`
 }
 
