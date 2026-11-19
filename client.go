@@ -12,26 +12,6 @@ import (
 	"github.com/MinatoAka/myhttp"
 )
 
-// Client adalah wrapper utama untuk interaksi Indodax API.
-// Ia memegang kredensial dan transport instance.
-type Client struct {
-	apiKey    string
-	secretKey string
-	http      *myhttp.Client // Reuse myhttp sebagai indirect dependency
-}
-
-// Option adalah fungsi modifier untuk konfigurasi Client saat inisialisasi.
-type Option func(*clientConfig)
-
-// clientConfig menyimpan opsi internal sebelum dibangun jadi myhttp.Client.
-type clientConfig struct {
-	retries       int
-	retryWait     time.Duration
-	rateLimit     int
-	timeout       time.Duration
-	userAgent     string
-}
-
 // WithRetry mengatur retry policy.
 func WithRetry(retries int, wait time.Duration) Option {
 	return func(c *clientConfig) {
