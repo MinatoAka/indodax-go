@@ -2,7 +2,10 @@ package indodax
 
 import (
 	"encoding/json"
+	"time"
 	"fmt"
+
+	"github.com/MinatoAka/myhttp"
 )
 
 // Client adalah wrapper utama untuk interaksi Indodax API.
