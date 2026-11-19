@@ -152,7 +152,7 @@ if err != nil {
 ```
 
 
-- Ambil Detail Eksekusi Market Order (Trade History)
+### Ambil Detail Eksekusi Market Order (Trade History)
 
 > **⚠️ CATATAN KRUSIAL:**
 > 
@@ -200,7 +200,7 @@ for _, t := range trades {
 | `symbol` + `startTime` + `endTime` | Trade dalam rentang waktu (max 7 hari) |
 
 
-- Typed Error Handling (Cerdas Menghadapi Error API)
+## Typed Error Handling (Cerdas Menghadapi Error API)
 Library mengembalikan `*IndodaxError` yang bisa di-assert menggunakan `errors.As`. Bot Anda bisa mengambil keputusan logis tanpa perlu parsing string manual.
 
 ```go
@@ -239,7 +239,6 @@ if err != nil {
 }
 ```
 
-
 - 📌 **Helper Methods Error yang Tersedia:**
 
 | Method | Code | Arti |
@@ -253,6 +252,7 @@ if err != nil {
 | `IsMarketSuspended()` | `-1016` | Pair sedang disuspend |
 | `IsOrderRejected()` | `-2010` | Order ditolak |
 
+
 ## 🛠️ Arsitektur & Design Choices
 
 | Komponen | Implementasi | Alasan Teknis |
@@ -264,6 +264,7 @@ if err != nil {
 | **HTTP Transport** | `myhttp` (library internal) | Ringan, fleksibel, retry & rate-limit built-in. |
 | **HMAC Signing** | `hmacgo` (library internal) | Deterministik, URL-safe, zero-dependency eksternal. |
 
+
 ## 🧪 Testing
 
 Unit tests menggunakan `httptest.Server` lokal (mock server). Tidak butuh koneksi internet asli. Validasi meliputi:  
@@ -274,6 +275,7 @@ Unit tests menggunakan `httptest.Server` lokal (mock server). Tidak butuh koneks
 ```bash
 go test -v ./...
 ```
+
 
 ## 📦 Data Types (Response)
 
