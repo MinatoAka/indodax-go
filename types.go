@@ -1,9 +1,9 @@
 package indodax
 
-import {
+import (
 	"encoding/json"
 	"fmt"
-}
+)
 
 // BalanceResult menyimpan saldo akun.
 type BalanceResult struct {
