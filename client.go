@@ -95,12 +95,18 @@ func (c *Client) doRequest(ctx context.Context, req *http.Request) ([]byte, erro
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		// PERBAIKAN: Cek apakah response HTTP 4xx/5xx ini berisi JSON IndodaxError.
+		// Jika iya, kembalikan *IndodaxError agar bot bisa melakukan type assertion.
+		if apiErr := checkAPIError(body); apiErr != nil {
+			return nil, apiErr
+		}
+		
+		// Fallback jika server Indodax down atau membalas HTML/teks biasa (bukan JSON error)
 		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
 
 	return body, nil
 }
-
 // --- HELPER MARKET ORDER (Mencegah salah parameter Buy vs Sell) ---
 // PlaceMarketBuy melakukan pembelian instan menggunakan nominal IDR (quoteOrderQty).
 func (c *Client) PlaceMarketBuy(ctx context.Context, pair string, idrAmount float64) (OrderResult, error) {
