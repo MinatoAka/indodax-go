@@ -85,3 +85,22 @@ type Trade struct {
 type tradeHistoryResponse struct {
 	Data []Trade `json:"data"`
 }
+
+// Error report API
+type IndodaxError struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+func (e *IndodaxError) Error() string {
+	return fmt.Sprintf("indodax api error (code %d): %s", e.Code, e.Msg)
+}
+
+func (e *IndodaxError) IsRateLimit() bool           { return e.Code == -1003 }
+func (e *IndodaxError) IsInvalidCredentials() bool  { return e.Code == -1002 }
+func (e *IndodaxError) IsInvalidTimestamp() bool    { return e.Code == -1021 }
+func (e *IndodaxError) IsInvalidSignature() bool    { return e.Code == -1022 }
+func (e *IndodaxError) IsInsufficientBalance() bool { return e.Code == -4026 }
+func (e *IndodaxError) IsOrderNotFound() bool       { return e.Code == -2013 || e.Code == 1112 }
+func (e *IndodaxError) IsMarketSuspended() bool     { return e.Code == -1016 }
+func (e *IndodaxError) IsOrderRejected() bool       { return e.Code == -2010 }
