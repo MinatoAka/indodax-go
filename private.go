@@ -167,3 +167,68 @@ func (c *Client) SubmitOrder(ctx context.Context, reqPayload SubmitOrderRequest)
 
 	return response, nil
 }
+
+// Untuk Market Order, gunakan field OrderID yang diisi dengan FullOrderID dari hasil SubmitOrder
+// untuk mendapatkan detail harga eksekusi (Price) dan waktu (Time).
+func (c *Client) TradeHistory(ctx context.Context, req TradeHistoryRequest) ([]Trade, error) {
+	if c.apiKey == "" || c.secretKey == "" {
+		return nil, fmt.Errorf("missing credentials for private endpoint")
+	}
+
+	if req.Symbol == "" {
+		return nil, fmt.Errorf("symbol is mandatory for trade history")
+	}
+
+	params := map[string]string{
+		"symbol":     strings.ToLower(req.Symbol),
+		"timestamp":  strconv.FormatInt(time.Now().UnixMilli(), 10),
+		"recvWindow": "5000",
+	}
+
+	if req.OrderID != "" {
+		params["orderId"] = req.OrderID
+	}
+	if req.ClientOrderID != "" {
+		params["clientOrderId"] = req.ClientOrderID
+	}
+	if req.StartTime > 0 {
+		params["startTime"] = strconv.FormatInt(req.StartTime, 10)
+	}
+	if req.EndTime > 0 {
+		params["endTime"] = strconv.FormatInt(req.EndTime, 10)
+	}
+	if req.Limit > 0 {
+		params["limit"] = strconv.Itoa(req.Limit)
+	}
+	if req.Sort != "" {
+		params["sort"] = req.Sort
+	}
+
+	query := hmacgo.BuildQuery(params)
+	signature := hmacgo.SignSHA256(query, c.secretKey)
+
+	endpoint := BaseURLPrivate + "/api/v2/myTrades?" + query
+
+	reqHTTP, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("build trade history request: %w", err)
+	}
+
+	c.setPrivateHeaders(reqHTTP, signature, false)
+
+	body, err := c.doRequest(ctx, reqHTTP)
+	if err != nil {
+		return nil, fmt.Errorf("trade history fetch failed (symbol: %s): %w", req.Symbol, err)
+	}
+
+	if err := checkAPIError(body); err != nil {
+		return nil, err
+	}
+
+	var response tradeHistoryResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("parse trade history JSON: %w", err)
+	}
+
+	return response.Data, nil
+}
