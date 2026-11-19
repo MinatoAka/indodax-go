@@ -152,7 +152,7 @@ if err != nil {
 ```
 
 
-### Ambil Detail Eksekusi Market Order (Trade History)
+### Ambil Detail Eksekusi Market Order (Private - Signed GET)
 
 > **⚠️ CATATAN KRUSIAL:**
 > 
