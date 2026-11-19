@@ -234,3 +234,145 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 		t.Errorf("DayLow Mismatch. Got: %f, Want: 32901000.0", dl)
 	}
 }
+
+func TestTradeHistory_SigningAndParsing(t *testing.T) {
+	expectedSymbol := "ethidr"
+	expectedOrderID := "ethidr-market-6423"
+	expectedPrice := "33570000"
+	expectedQty := "0.00030391"
+	
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		// 1. Validasi Method & Path
+		if r.Method != http.MethodGet {
+			t.Errorf("Expected GET, got %s", r.Method)
+		}
+		if !strings.HasSuffix(r.URL.Path, "/myTrades") {
+			t.Errorf("Expected path ending with /myTrades, got %s", r.URL.Path)
+		}
+
+		// 2. Validasi Headers
+		apiKey := r.Header.Get("X-APIKEY")
+		signature := r.Header.Get("Sign")
+		
+		if apiKey != "test-api-key" {
+			t.Errorf("Wrong API Key: %s", apiKey)
+		}
+		
+		// 3. Validasi Query Params & Signature Logic
+		queryParams := r.URL.Query()
+		
+		// Cek parameter wajib & filter (Symbol harus lowercase sesuai implementasi di private.go)
+		if gotSymbol := queryParams.Get("symbol"); gotSymbol != expectedSymbol {
+			t.Errorf("Symbol mismatch. Got: %s, Want: %s", gotSymbol, expectedSymbol)
+		}
+		if gotOrderID := queryParams.Get("orderId"); gotOrderID != expectedOrderID {
+			t.Errorf("OrderID mismatch. Got: %s, Want: %s", gotOrderID, expectedOrderID)
+		}
+
+		// Reconstruct signature
+		paramsMap := make(map[string]string)
+		for k, v := range queryParams {
+			paramsMap[k] = v[0]
+		}
+		
+		canonicalQuery := hmacgo.BuildQuery(paramsMap)
+		expectedSig := hmacgo.SignSHA256(canonicalQuery, "test-secret-key")
+		
+		if signature != expectedSig {
+			t.Errorf("Signature mismatch.\nGot:  %s\nWant: %s\nCanonical: %s", signature, expectedSig, canonicalQuery)
+		}
+
+		// 4. Return Mock Response (sesuai format TAPI v2)
+		resp := map[string]interface{}{
+			"data": []map[string]interface{}{
+				{
+					"tradeId":         "72057594037936570",
+					"orderId":         expectedOrderID,
+					"clientOrderId":   "clientx-1",
+					"symbol":          expectedSymbol,
+					"price":           expectedPrice,
+					"qty":             expectedQty,
+					"quoteQty":        "10.20",
+					"commission":      "0.01",
+					"commissionAsset": "idr",
+					"isBuyer":         true,
+					"isMaker":         false,
+					"time":            1723442692520,
+				},
+			},
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	}
+
+	client, cleanup := setupTestServer(t, handler)
+	defer cleanup()
+
+	req := TradeHistoryRequest{
+		Symbol:  "ETHIDR", // Testing case-insensitivity (harusnya diconvert ke lowercase di private.go)
+		OrderID: expectedOrderID,
+	}
+
+	trades, err := client.TradeHistory(context.Background(), req)
+	if err != nil {
+		t.Fatalf("TradeHistory error: %v", err)
+	}
+
+	if len(trades) != 1 {
+		t.Fatalf("Expected 1 trade, got %d", len(trades))
+	}
+
+	trade := trades[0]
+	
+	// Validasi parsing json.Number (Presisi tetap aman)
+	if trade.Price.String() != expectedPrice {
+		t.Errorf("Price Mismatch. Got: %s, Want: %s", trade.Price.String(), expectedPrice)
+	}
+	if trade.Qty.String() != expectedQty {
+		t.Errorf("Qty Mismatch. Got: %s, Want: %s", trade.Qty.String(), expectedQty)
+	}
+	if !trade.IsBuyer {
+		t.Errorf("IsBuyer should be true")
+	}
+	if trade.OrderID != expectedOrderID {
+		t.Errorf("OrderID Mismatch. Got: %s, Want: %s", trade.OrderID, expectedOrderID)
+	}
+}
+
+func TestTradeHistory_APIError(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		// Indodax sering return 200 OK tapi body-nya JSON error, atau 400 Bad Request.
+		// checkAPIError handle keduanya selama body-nya JSON error.
+		resp := map[string]interface{}{
+			"code": -1121,
+			"msg":  "Invalid symbol.",
+		}
+		json.NewEncoder(w).Encode(resp)
+	}
+
+	client, cleanup := setupTestServer(t, handler)
+	defer cleanup()
+
+	req := TradeHistoryRequest{
+		Symbol: "invalidpair",
+	}
+
+	_, err := client.TradeHistory(context.Background(), req)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	// Type assertion ke IndodaxError
+	apiErr, ok := err.(*IndodaxError)
+	if !ok {
+		t.Fatalf("Expected *IndodaxError, got %T: %v", err, err)
+	}
+
+	if apiErr.Code != -1121 {
+		t.Errorf("Error Code Mismatch. Got: %d, Want: -1121", apiErr.Code)
+	}
+	if apiErr.Msg != "Invalid symbol." {
+		t.Errorf("Error Msg Mismatch. Got: %s, Want: Invalid symbol.", apiErr.Msg)
+	}
+}
