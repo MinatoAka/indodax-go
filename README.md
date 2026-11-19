@@ -12,7 +12,8 @@
 
 Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, fokus pada eksekusi **Market Order**, serta pemisahan jelas antara endpoint Public & Private.
 
-> ⚠️ **Catatan Penting:**  
+> ⚠️ **Catatan Penting:**
+> 
 > Proyek ini adalah implementasi pihak ketiga (*third-party*) yang tidak berafiliasi dengan Indodax.
 > Pastikan Anda memahami dokumentasi resmi sebelum digunakan dalam produksi.
 
@@ -150,14 +151,118 @@ if err != nil {
 }
 ```
 
+
+- Ambil Detail Eksekusi Market Order (Trade History)
+
+> **⚠️ CATATAN KRUSIAL:**
+> 
+> Endpoint `GET /api/v2/order` **TIDAK** mengembalikan field `price` untuk order bertipe `MARKET`.
+> Untuk mendapatkan **harga eksekusi aktual** dan **waktu fill**, wajib gunakan `GET /api/v2/myTrades` dengan filter `FullOrderID`.
+
+```go
+// 1. Submit Market Order dulu
+buyRes, err := client.PlaceMarketBuy(ctx, "ETHIDR", 100000.00)
+if err != nil {
+    log.Printf("Error submit: %v", err)
+    return
+}
+
+// 2. Ambil detail eksekusi menggunakan FullOrderID
+trades, err := client.TradeHistory(ctx, indodax.TradeHistoryRequest{
+    Symbol:  "ethidr",
+    OrderID: buyRes.FullOrderID, // e.g., "ethidr-market-6423"
+})
+if err != nil {
+    log.Printf("Error trade history: %v", err)
+    return
+}
+
+// 3. Baca detail eksekusi (presisi aman via json.Number)
+for _, t := range trades {
+    fmt.Printf("Price     : %s\n", t.Price.String())
+    fmt.Printf("Qty       : %s\n", t.Qty.String())
+    fmt.Printf("QuoteQty  : %s\n", t.QuoteQty.String())
+    fmt.Printf("Fee       : %s %s\n", t.Commission.String(), t.CommissionAsset)
+    fmt.Printf("Time (ms) : %d\n", t.Time)
+    fmt.Printf("IsBuyer   : %v\n", t.IsBuyer)
+    fmt.Printf("IsMaker   : %v\n", t.IsMaker)
+}
+```
+📌 **Supported Parameter Combinations:**
+
+| Kombinasi | Deskripsi |
+| :-- | :-- |
+| `symbol` | Semua trade pada pair tersebut (default 24 jam terakhir) |
+| `symbol` + `orderId` | Trade milik order tertentu (pakai `FullOrderID`) |
+| `symbol` + `clientOrderId` | Trade milik order berdasarkan client ID |
+| `symbol` + `startTime` | Trade sejak waktu tertentu |
+| `symbol` + `endTime` | Trade hingga waktu tertentu |
+| `symbol` + `startTime` + `endTime` | Trade dalam rentang waktu (max 7 hari) |
+
+
+- Typed Error Handling (Cerdas Menghadapi Error API)
+Library mengembalikan `*IndodaxError` yang bisa di-assert menggunakan `errors.As`. Bot Anda bisa mengambil keputusan logis tanpa perlu parsing string manual.
+
+```go
+import "errors"
+
+_, err := client.SubmitOrder(ctx, req)
+if err != nil {
+    var apiErr *indodax.IndodaxError
+    if errors.As(err, &apiErr) {
+        // Error dari Indodax API (JSON error)
+        switch {
+        case apiErr.IsRateLimit():
+            // Code -1003: Bot tahu harus sleep lalu retry
+            time.Sleep(2 * time.Second)
+        case apiErr.IsInsufficientBalance():
+            // Code -4026: Stop trading pair ini
+            log.Println("Saldo habis, stop trading")
+            return
+        case apiErr.IsInvalidTimestamp():
+            // Code -1021: Clock drift, perlu sinkronisasi
+            log.Println("Clock drift terdeteksi")
+        case apiErr.IsInvalidSignature():
+            // Code -1022: Cek ulang secret key
+            log.Println("Signature invalid")
+        case apiErr.IsOrderRejected():
+            // Code -2010: Order ditolak
+            log.Printf("Order rejected: %s", apiErr.Msg)
+        default:
+            log.Printf("API Error [%d]: %s", apiErr.Code, apiErr.Msg)
+        }
+    } else {
+        // Error jaringan/sistem (bukan dari JSON Indodax)
+        log.Printf("Network/System error: %v", err)
+    }
+    return
+}
+```
+
+
+- 📌 **Helper Methods Error yang Tersedia:**
+
+| Method | Code | Arti |
+| :-- | :-- | :-- |
+| `IsRateLimit()` | `-1003` | Too many requests |
+| `IsInvalidCredentials()` | `-1002` | API key invalid / expired |
+| `IsInvalidTimestamp()` | `-1021` | Timestamp di luar recvWindow |
+| `IsInvalidSignature()` | `-1022` | HMAC signature invalid |
+| `IsInsufficientBalance()` | `-4026` | Saldo tidak cukup |
+| `IsOrderNotFound()` | `-2013` / `1112` | Order tidak ditemukan |
+| `IsMarketSuspended()` | `-1016` | Pair sedang disuspend |
+| `IsOrderRejected()` | `-2010` | Order ditolak |
+
 ## 🛠️ Arsitektur & Design Choices
 
 | Komponen | Implementasi | Alasan Teknis |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **Base URLs** | Global vars di `private.go` & `public.go` | Memudahkan override untuk testing/mock server tanpa refactor besar. |
 | **Signing Payload** | Sorted Query String `GET` / Form Body `POST` | Sesuai protokol ketat Indodax TAPI v2. Salah satu saja = reject silent. |
 | **Response Parsing** | Strict JSON Unmarshal + LimitReader (2MB) | Mencegah memory exhaustion dari response abnormal/DDoS ringan. |
-| **Error Handling** | Wrapped errors (`%w`) | Mempertahankan stack trace debugging sampai ke akar masalah transport/logic. |
+| **Error Handling** | Typed `*IndodaxError` + wrapped errors (`%w`) | Mempertahankan stack trace debugging + keputusan logis di bot. |
+| **HTTP Transport** | `myhttp` (library internal) | Ringan, fleksibel, retry & rate-limit built-in. |
+| **HMAC Signing** | `hmacgo` (library internal) | Deterministik, URL-safe, zero-dependency eksternal. |
 
 ## 🧪 Testing
 
@@ -209,6 +314,33 @@ Data pasar *real-time*. Menggunakan `json.Number` untuk mencegah *error parsing*
 | `ID` | `string` | Nama pair (contoh: `ETHIDR`). |
 | `MinQty` | `float64` | Batas minimum kuantitas yang boleh ditransaksikan. |
 
+### 5. `myTradesResponse`
+
+Detail eksekusi trade fill dari `GET /api/v2/myTrades`. Semua angka desimal disimpan sebagai `json.Number` untuk menjaga presisi.
+
+| Field | Tipe | Deskripsi |
+| :-- | :-- | :-- |
+| `TradeID` | `string` | Unique identifier for the trade. |
+| `OrderID` | `string` | Full order ID (e.g., `ethidr-market-6423`). |
+| `ClientOrderID` | `string` | Client-specified ID for the order. |
+| `Symbol` | `string` | Trading pair symbol. |
+| `Price` | `json.Number` | Harga eksekusi per unit base asset. |
+| `Qty` | `json.Number` | Base asset quantity yang dieksekusi. |
+| `QuoteQty` | `json.Number` | Total nilai trade dalam quote asset (IDR). |
+| `Commission` | `json.Number` | Total fee + pajak yang dibayar. |
+| `CommissionAsset` | `string` | Asset yang dipakai untuk bayar fee (IDR/USDT). |
+| `IsBuyer` | `bool` | `true` jika akun Anda sebagai Buyer. |
+| `IsMaker` | `bool` | `true` jika akun Anda sebagai Maker. |
+| `Time` | `int64` | Timestamp eksekusi trade (Unix milliseconds). |
+
+### 6. `IndodaxError` (Typed API Error)
+
+Error terstruktur dari Indodax API. Bisa di-assert menggunakan `errors.As`.
+
+| Field | Tipe | Deskripsi |
+| :-- | :-- | :-- |
+| `Code` | `int` | Kode error dari Indodax (e.g., `-1003`, `-4026`). |
+| `Msg` | `string` | Pesan error dari Indodax. |
 
 ## 🤝 Support & Exchange
 
