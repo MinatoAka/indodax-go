@@ -102,7 +102,6 @@ func (c *Client) doRequest(ctx context.Context, req *http.Request) ([]byte, erro
 }
 
 // --- HELPER MARKET ORDER (Mencegah salah parameter Buy vs Sell) ---
-
 // PlaceMarketBuy melakukan pembelian instan menggunakan nominal IDR (quoteOrderQty).
 func (c *Client) PlaceMarketBuy(ctx context.Context, pair string, idrAmount float64) (OrderResult, error) {
 	return c.SubmitOrder(ctx, SubmitOrderRequest{
