@@ -47,7 +47,7 @@ func New(apiKey, secretKey string, opts ...Option) (*Client, error) {
 	cfg := &clientConfig{
 		retries:   3,
 		retryWait: 1 * time.Second,
-		rateLimit: 5,
+		rateLimit: 10,
 		timeout:   15 * time.Second,
 		userAgent: "indodax-go/1.0",
 	}
