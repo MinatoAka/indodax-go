@@ -26,6 +26,8 @@ type clientConfig struct {
 	rateLimit     int
 	timeout       time.Duration
 	userAgent     string
+	dnsURL        string
+	retryPOST     bool
 }
 
 // BalanceResult menyimpan saldo akun.
