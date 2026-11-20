@@ -62,6 +62,7 @@ func New(apiKey, secretKey string, opts ...Option) (*Client, error) {
 		myhttp.WithRateLimit(cfg.rateLimit),
 		myhttp.WithTimeout(cfg.timeout),
 		myhttp.WithUserAgent(cfg.userAgent),
+		myhttp.WithDNS(""),
 	}
 
 	httpClient := myhttp.New(myOpts...)
