@@ -50,6 +50,8 @@ func New(apiKey, secretKey string, opts ...Option) (*Client, error) {
 		rateLimit: 5,
 		timeout:   15 * time.Second,
 		userAgent: "indodax-go/1.0",
+		dnsURL: "",
+		retryPOST: false,
 	}
 
 	for _, opt := range opts {
@@ -62,7 +64,8 @@ func New(apiKey, secretKey string, opts ...Option) (*Client, error) {
 		myhttp.WithRateLimit(cfg.rateLimit),
 		myhttp.WithTimeout(cfg.timeout),
 		myhttp.WithUserAgent(cfg.userAgent),
-		myhttp.WithDNS(""),
+		myhttp.WithDNS(cfg.dnsURL),
+		myhttp.WithRetryPOST(cfg.retryPOST),
 	}
 
 	httpClient := myhttp.New(myOpts...)
