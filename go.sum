@@ -2,3 +2,7 @@ github.com/MinatoAka/hmacgo v1.0.0 h1:bsmXw3Mmbzw4Ket9M5XpoEI9OgtJRuJsbTrcXcxNgp
 github.com/MinatoAka/hmacgo v1.0.0/go.mod h1:pTDhNMjbhF3RiFU9ziahbhiSZ4xm5bKbTc/r6ZwxQ1A=
 github.com/MinatoAka/myhttp v1.0.2 h1:q0h6DXSQ4R+MPDiTfdKnc6uo4M1W4iulwjwv4iuTzg8=
 github.com/MinatoAka/myhttp v1.0.2/go.mod h1:3Tdz5UpX74P2gs7XGNV/dEiddH+AN4P0vAVcDNPkvDA=
+github.com/MinatoAka/myhttp v1.1.2 h1:nWnhunSIf+BWy8MliV+o4cZrxdRYR5JAyJs8Vz34tC8=
+github.com/MinatoAka/myhttp v1.1.2/go.mod h1:vNbEshdoRmd5yilbBhmlIOFkvu6ITMgnIE5xFq2e0yE=
+golang.org/x/net v0.63.0 h1:HCoTmNh9EpD1PpK8gBNFY4gcTY4N+KQEO8ylfIKqFJ0=
+golang.org/x/net v0.63.0/go.mod h1:15JLg3IX1bLjHK264EZQEbIpTiR/KVLuo9CTRWd0pig=
