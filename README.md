@@ -1,4 +1,8 @@
-# indodax-go
+<div align="center">
+# 🥷 indodax-go
+
+***Standalone Library Go untuk [Indodax Official Trade API v2](https://github.com/btcid/indodax-official-api-docs)***
+*Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, fokus pada eksekusi **Market Order**, serta pemisahan jelas antara endpoint Public & Private.*
 
 [![Go Version](https://img.shields.io/badge/Go-1.27.3-00ADD8?logo=go)](https://go.dev/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/MinatoAka/indodax-go.svg)](https://pkg.go.dev/github.com/MinatoAka/indodax-go)
@@ -7,10 +11,8 @@
 ![Release](https://img.shields.io/github/v/release/MinatoAka/indodax-go?include_prereleases&label=release)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
-
-***Standalone Library Go untuk [Indodax Official Trade API v2](https://github.com/btcid/indodax-official-api-docs)***
-
-Dirancang khusus untuk kebutuhan bot trading: presisi tinggi, modular, fokus pada eksekusi **Market Order**, serta pemisahan jelas antara endpoint Public & Private.
+---
+</div>
 
 > ⚠️ **Catatan Penting:**
 > 
