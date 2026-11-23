@@ -49,7 +49,7 @@ func New(apiKey, secretKey string, opts ...Option) (*Client, error) {
 		retryWait: 1 * time.Second,
 		rateLimit: 5,
 		timeout:   15 * time.Second,
-		userAgent: "indodax-go/1.0",
+		userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 		dnsURL: "",
 		retryPOST: false,
 	}
