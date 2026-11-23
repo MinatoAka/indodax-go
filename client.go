@@ -42,9 +42,9 @@ func WithUserAgent(ua string) Option {
 }
 
 // Custom DoH
-func WithDNS(DNS string) Option {
+func WithDNS(dns string) Option {
 	return func(c *clientConfig) {
-		c.dnsURL = DNS
+		c.dnsURL = dns
 	}
 }
 
