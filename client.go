@@ -41,6 +41,13 @@ func WithUserAgent(ua string) Option {
 	}
 }
 
+// Custom DoH
+func WithDNS(DNS string) Option {
+	return func(c *clientConfig) {
+		c.dnsURL = DNS
+	}
+}
+
 // New membuat instance Client baru dengan kredensial dan opsi transport.
 // Jika apiKey/secretKey kosong, method Private akan gagal runtime (expected behavior).
 func New(apiKey, secretKey string, opts ...Option) (*Client, error) {
