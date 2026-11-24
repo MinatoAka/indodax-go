@@ -237,7 +237,7 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 
 func TestTradeHistory_SigningAndParsing(t *testing.T) {
 	expectedSymbol := "ethidr"
-	expectedOrderID := "ethidr-market-6423"
+	expectedFullOrderID := "ethidr-market-6423"
 	expectedPrice := "33570000"
 	expectedQty := "0.00030391"
 	
@@ -265,8 +265,8 @@ func TestTradeHistory_SigningAndParsing(t *testing.T) {
 		if gotSymbol := queryParams.Get("symbol"); gotSymbol != expectedSymbol {
 			t.Errorf("Symbol mismatch. Got: %s, Want: %s", gotSymbol, expectedSymbol)
 		}
-		if gotOrderID := queryParams.Get("orderId"); gotOrderID != expectedOrderID {
-			t.Errorf("OrderID mismatch. Got: %s, Want: %s", gotOrderID, expectedOrderID)
+		if gotFullOrderID := queryParams.Get("fullOrderId"); gotFullOrderID != expectedFullOrderID {
+			t.Errorf("OrderID mismatch. Got: %s, Want: %s", gotFullOrderID, expectedFullOrderID)
 		}
 
 		// Reconstruct signature
@@ -287,7 +287,7 @@ func TestTradeHistory_SigningAndParsing(t *testing.T) {
 			"data": []map[string]interface{}{
 				{
 					"tradeId":         "72057594037936570",
-					"orderId":         expectedOrderID,
+					"orderId":         expectedFullOrderID,
 					"clientOrderId":   "clientx-1",
 					"symbol":          expectedSymbol,
 					"price":           expectedPrice,
@@ -310,7 +310,7 @@ func TestTradeHistory_SigningAndParsing(t *testing.T) {
 
 	req := TradeHistoryRequest{
 		Symbol:  "ETHIDR", // Testing case-insensitivity (harusnya diconvert ke lowercase di private.go)
-		OrderID: expectedOrderID,
+		FullOrderID: expectedFullOrderID,
 	}
 
 	trades, err := client.TradeHistory(context.Background(), req)
@@ -334,8 +334,8 @@ func TestTradeHistory_SigningAndParsing(t *testing.T) {
 	if !trade.IsBuyer {
 		t.Errorf("IsBuyer should be true")
 	}
-	if trade.OrderID != expectedOrderID {
-		t.Errorf("OrderID Mismatch. Got: %s, Want: %s", trade.OrderID, expectedOrderID)
+	if trade.OrderID != expectedFullOrderID {
+		t.Errorf("OrderID Mismatch. Got: %s, Want: %s", trade.OrderID, expectedFullOrderID)
 	}
 }
 
