@@ -12,8 +12,10 @@
 ![Release](https://img.shields.io/github/v/release/MinatoAka/indodax-go?include_prereleases&label=release)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
----
+
 </div>
+
+---
 
 > ⚠️ **Catatan Penting:**
 > 
