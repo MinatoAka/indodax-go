@@ -265,7 +265,7 @@ func TestTradeHistory_SigningAndParsing(t *testing.T) {
 		if gotSymbol := queryParams.Get("symbol"); gotSymbol != expectedSymbol {
 			t.Errorf("Symbol mismatch. Got: %s, Want: %s", gotSymbol, expectedSymbol)
 		}
-		if gotFullOrderID := queryParams.Get("fullOrderId"); gotFullOrderID != expectedFullOrderID {
+		if gotFullOrderID := queryParams.Get("orderId"); gotFullOrderID != expectedFullOrderID {
 			t.Errorf("OrderID mismatch. Got: %s, Want: %s", gotFullOrderID, expectedFullOrderID)
 		}
 
