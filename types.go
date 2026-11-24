@@ -82,7 +82,7 @@ func (t TickerResponse) GetDayLow() (float64, error)     { return t.Ticker.Low.F
 // TradeHistoryRequest adalah parameter untuk GET /api/v2/myTrades.
 type TradeHistoryRequest struct {
 	Symbol        string // Mandatory (e.g., btcidr)
-	OrderID       string // Optional, isi dengan FullOrderID dari SubmitOrder (e.g., ethidr-market-6423)
+	FullOrderID   string 
 	ClientOrderID string // Optional
 	StartTime     int64  // Optional, Unix milliseconds
 	EndTime       int64  // Optional, Unix milliseconds
