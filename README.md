@@ -308,6 +308,7 @@ Menyimpan detail transaksi. Angka desimal disimpan sebagai `string` untuk menceg
 | `AssetRaw` | `string` | Saldo aset **mentah** dari API. |
 
 ### 3. `TickerResponse` (dari `Ticker`)
+
 Data pasar *real-time*. Menggunakan `json.Number` untuk mencegah *error parsing* tipe data.
 > Akses nilainya menggunakan *helper methods*:
 * `.GetLastPrice()`,
@@ -317,12 +318,39 @@ Data pasar *real-time*. Menggunakan `json.Number` untuk mencegah *error parsing*
 * `.GetDayLow()`.
 
 ### 4. `PairInfo`
+
 | Field | Tipe | Deskripsi |
 | :--- | :--- | :--- |
 | `ID` | `string` | Nama pair (contoh: `ETHIDR`). |
 | `MinQty` | `float64` | Batas minimum kuantitas yang boleh ditransaksikan. |
 
-### 5. `myTradesResponse`
+### 5. Fetch Trade History (Private - Signed GET)
+
+Because Market Orders do not return an execution price directly in the initial response, you must use the `TradeHistory` endpoint (via `GET /api/v2/myTrades`) to retrieve the actual filled price. 
+
+> [!NOTE]  
+> To filter trades for a specific order, pass the `FullOrderID` (e.g., `ethidr-market-6423`) into the `FullOrderID` field. The SDK will automatically map this to the correct API parameter.
+
+```go
+req := indodax.TradeHistoryRequest{
+    Symbol:      "ethidr",
+    FullOrderID: "ethidr-market-6423", // Use the FullOrderID from your SubmitOrder response
+}
+
+trades, err := client.TradeHistory(ctx, req)
+if err != nil {
+    log.Printf("Error fetching trade history: %v", err)
+} else if len(trades) > 0 {
+    // trades[0].Price is a json.Number. Convert to float64 for calculations.
+    execPrice, _ := strconv.ParseFloat(trades[0].Price.String(), 64)
+    filledQty, _ := strconv.ParseFloat(trades[0].Qty.String(), 64)
+    
+    fmt.Printf("Actual Execution Price: Rp %.2f\n", execPrice)
+    fmt.Printf("Filled Quantity: %.8f\n", filledQty)
+}
+```
+
+### 6. `myTradesResponse`
 
 Detail eksekusi trade fill dari `GET /api/v2/myTrades`. Semua angka desimal disimpan sebagai `json.Number` untuk menjaga presisi.
 
@@ -341,7 +369,7 @@ Detail eksekusi trade fill dari `GET /api/v2/myTrades`. Semua angka desimal disi
 | `IsMaker` | `bool` | `true` jika akun Anda sebagai Maker. |
 | `Time` | `int64` | Timestamp eksekusi trade (Unix milliseconds). |
 
-### 6. `IndodaxError` (Typed API Error)
+### 7. `IndodaxError` (Typed API Error)
 
 Error terstruktur dari Indodax API. Bisa di-assert menggunakan `errors.As`.
 
