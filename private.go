@@ -179,7 +179,7 @@ func (c *Client) TradeHistory(ctx context.Context, req TradeHistoryRequest) ([]T
 	}
 
 	if req.FullOrderID != "" {
-		params["fullOrderId"] = req.FullOrderID
+		params["orderId"] = req.FullOrderID
 	}
 	if req.ClientOrderID != "" {
 		params["clientOrderId"] = req.ClientOrderID
