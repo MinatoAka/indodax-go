@@ -18,7 +18,7 @@ func (c *Client) Ticker(ctx context.Context, pair string) (TickerResponse, error
 		return TickerResponse{}, fmt.Errorf("pair cannot be empty")
 	}
 
-	endpoint := BaseURLPublic + "/api/ticker/" + url.PathEscape(strings.ToLower(pair))
+	endpoint := BaseURLPrivate + "/api/v2/ticker/price?symbol=" + url.QueryEscape(strings.ToUpper(pair))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
