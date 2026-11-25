@@ -66,13 +66,6 @@ type TickerResponse struct {
 	Price  json.Number `json:"price"`
 }
 
-// --- Helper Methods untuk Ticker ---
-func (t TickerResponse) GetLastPrice() (float64, error)  { return t.Ticker.Last.Float64() }
-func (t TickerResponse) GetHighestBid() (float64, error) { return t.Ticker.Buy.Float64() }
-func (t TickerResponse) GetLowestAsk() (float64, error)  { return t.Ticker.Sell.Float64() }
-func (t TickerResponse) GetDayHigh() (float64, error)    { return t.Ticker.High.Float64() }
-func (t TickerResponse) GetDayLow() (float64, error)     { return t.Ticker.Low.Float64() }
-
 // TradeHistoryRequest adalah parameter untuk GET /api/v2/myTrades.
 type TradeHistoryRequest struct {
 	Symbol        string // Mandatory (e.g., btcidr)
