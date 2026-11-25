@@ -83,18 +83,25 @@ func main() {
 Menggunakan struct `TickerResponse` dengan tipe `json.Number` untuk menjaga presisi angka dari JSON. Gunakan helper method `.Float64()` untuk akses nilai desimal.
 
 ```go
+// Mengambil data ticker (harga terakhir) untuk pair tertentu
 ticker, err := client.Ticker(ctx, "ethidr")
 if err != nil {
-    log.Printf("Error ticker: %v", err)
+    log.Printf("Error fetching ticker: %v", err)
 } else {
-    // Akses data via Helper Method (menghandle konversi json.Number ke float64 secara aman)
-    lastPrice, _ := ticker.GetLastPrice()
-    bestBid, _   := ticker.GetHighestBid()
-    bestAsk, _   := ticker.GetLowestAsk()
+    // Akses data LANGSUNG dari struct (tanpa helper method)
+    // Field Price bertipe json.Number untuk menjaga presisi angka
     
-    fmt.Printf("Harga Terakhir : Rp %.2f\n", lastPrice)
-    fmt.Printf("Best Bid       : Rp %.2f\n", bestBid)
-    fmt.Printf("Best Ask       : Rp %.2f\n", bestAsk)
+    // Opsi 1: Ambil sebagai string (paling aman, zero loss of precision)
+    fmt.Printf("Pair  : %s\n", ticker.Symbol)
+    fmt.Printf("Harga : Rp %s\n", ticker.Price.String())
+
+    // Opsi 2: Konversi ke float64 untuk kebutuhan kalkulasi bot (dengan error handling)
+    priceFloat, errParse := ticker.Price.Float64()
+    if errParse != nil {
+        log.Printf("Gagal parse harga ke float64: %v", errParse)
+    } else {
+        fmt.Printf("Harga (Float) : Rp %.2f\n", priceFloat)
+    }
 }
 ```
 
