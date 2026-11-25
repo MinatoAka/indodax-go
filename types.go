@@ -62,14 +62,8 @@ type PairInfo struct {
 }
 
 type TickerResponse struct {
-	Ticker struct {
-		Buy        json.Number `json:"buy"`
-		Sell       json.Number `json:"sell"`
-		Last       json.Number `json:"last"`
-		High       json.Number `json:"high"`
-		Low        json.Number `json:"low"`
-		ServerTime int64       `json:"server_time"`
-	} `json:"ticker"`
+	Symbol string      `json:"symbol"`
+	Price  json.Number `json:"price"`
 }
 
 // --- Helper Methods untuk Ticker ---
