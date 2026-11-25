@@ -162,29 +162,21 @@ func TestSubmitOrder_PostBodySigning(t *testing.T) {
 }
 
 func TestTicker_PublicNoAuth(t *testing.T) {
-		if r.Header.Get("Sign") != "" {
-	"testing"
-			t.Error("Public endpoint should not send X-APIKEY")
-		}
-			t.Error("Public endpoint should not send Sign")
-			"price":  "33570000",
+	handler := func(w http.ResponseWriter, r *http.Request) {
 		// 1. PASTIKAN PUBLIC ENDPOINT TIDAK MENGIRIM HEADER AUTH
 		if r.Header.Get("X-APIKEY") != "" {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-
-			"symbol": "ETHIDR",
-
-import (
-package indodax
-	"encoding/json"
-	"net/http"
-	"context"
-		resp := map[string]interface{}{
+			t.Error("Public endpoint should not send X-APIKEY")
 		}
+		if r.Header.Get("Sign") != "" {
+			t.Error("Public endpoint should not send Sign")
 		}
 
-		
 		// 2. REAL RESPONSE FORMAT (TAPI v2): Flat object, hanya symbol & price
+		resp := map[string]interface{}{
+			"symbol": "ETHIDR",
+			"price":  "33570000",
+		}
+		
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	}
