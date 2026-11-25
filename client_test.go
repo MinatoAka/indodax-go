@@ -162,26 +162,29 @@ func TestSubmitOrder_PostBodySigning(t *testing.T) {
 }
 
 func TestTicker_PublicNoAuth(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-APIKEY") != "" {
+		if r.Header.Get("Sign") != "" {
+	"testing"
 			t.Error("Public endpoint should not send X-APIKEY")
 		}
-		if r.Header.Get("Sign") != "" {
 			t.Error("Public endpoint should not send Sign")
+			"price":  "33570000",
+		// 1. PASTIKAN PUBLIC ENDPOINT TIDAK MENGIRIM HEADER AUTH
+		if r.Header.Get("X-APIKEY") != "" {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+
+			"symbol": "ETHIDR",
+
+import (
+package indodax
+	"encoding/json"
+	"net/http"
+	"context"
+		resp := map[string]interface{}{
+		}
 		}
 
-		// REAL RESPONSE FORMAT: Nested Object "ticker"
-		resp := map[string]interface{}{
-			"ticker": map[string]interface{}{
-				"buy":         "33569000", // Highest Bid
-				"sell":        "33571000", // Lowest Ask
-				"last":        "33570000", // Last Traded Price
-				"high":        "34157000", // Day High
-				"low":         "32901000", // Day Low
-				"server_time": 1794876675, // Unix Timestamp
-			},
-		}
 		
+		// 2. REAL RESPONSE FORMAT (TAPI v2): Flat object, hanya symbol & price
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
 	}
@@ -189,49 +192,31 @@ func TestTicker_PublicNoAuth(t *testing.T) {
 	client, cleanup := setupTestServer(t, handler)
 	defer cleanup()
 
+	// Panggil fungsi Ticker yang sudah diupdate
 	res, err := client.Ticker(context.Background(), "ethidr")
 	if err != nil {
 		t.Fatalf("Ticker error: %v", err)
 	}
 
-	// VALIDASI FIELD BARU (Nested Access)
+	// 3. VALIDASI FIELD BARU (Flat Access, Langsung dari Struct)
 	
-	// 1. Cek Last Price via Helper Method
-	lp, errLP := res.GetLastPrice()
-	if errLP != nil {
-		t.Fatalf("GetLastPrice failed: %v", errLP)
-	}
-	if lp != 33570000.0 {
-		t.Errorf("LastPrice Mismatch. Got: %f, Want: 33570000.0", lp)
+	// Cek Symbol
+	if res.Symbol != "ETHIDR" {
+		t.Errorf("Symbol Mismatch. Got: %s, Want: ETHIDR", res.Symbol)
 	}
 
-	// 2. Cek Highest Bid (Field 'buy')
-	hb, errHB := res.GetHighestBid()
-	if errHB != nil {
-		t.Fatalf("GetHighestBid failed: %v", errHB)
-	}
-	if hb != 33569000.0 {
-		t.Errorf("HighestBid Mismatch. Got: %f, Want: 33569000.0", hb)
+	// Cek Price (sebagai string/json.Number)
+	if res.Price.String() != "33570000" {
+		t.Errorf("Price Mismatch. Got: %s, Want: 33570000", res.Price.String())
 	}
 
-	// 3. Cek Lowest Ask (Field 'sell')
-	la, errLA := res.GetLowestAsk()
-	if errLA != nil {
-		t.Fatalf("GetLowestAsk failed: %v", errLA)
+	// 4. OPSIONAL: Validasi konversi ke float64 (untuk memastikan json.Number aman dipakai kalkulasi)
+	priceFloat, errParse := res.Price.Float64()
+	if errParse != nil {
+		t.Fatalf("Failed to parse Price to float64: %v", errParse)
 	}
-	if la != 33571000.0 {
-		t.Errorf("LowestAsk Mismatch. Got: %f, Want: 33571000.0", la)
-	}
-
-	// 4. Cek Day High & Low (Opsional tapi disarankan buat completeness)
-	dh, _ := res.GetDayHigh()
-	if dh != 34157000.0 {
-		t.Errorf("DayHigh Mismatch. Got: %f, Want: 34157000.0", dh)
-	}
-	
-	dl, _ := res.GetDayLow()
-	if dl != 32901000.0 {
-		t.Errorf("DayLow Mismatch. Got: %f, Want: 32901000.0", dl)
+	if priceFloat != 33570000.0 {
+		t.Errorf("Price Float Mismatch. Got: %f, Want: 33570000.0", priceFloat)
 	}
 }
 
