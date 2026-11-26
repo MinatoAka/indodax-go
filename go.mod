@@ -1,6 +1,6 @@
 module github.com/MinatoAka/indodax-go
 
-go 1.24
+go 1.26.0
 
 require (
         github.com/MinatoAka/hmacgo v1.0.0
